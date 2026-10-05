@@ -15,8 +15,9 @@ java.sourceCompatibility = "25"
 dependencies {
   implementation "com.github.xpenatan.gdx-teavm:backend-web:$gdxTeaVMVersion"
   implementation "com.github.xpenatan.gdx-teavm:gdx-freetype-web:$gdxTeaVMVersion"
+  implementation "com.github.xpenatan.jImGui:imgui-web:$jImGuiVersion"
+  implementation "com.github.xpenatan.jImGui:imgui-web_wasm:$jImGuiVersion"
   implementation project(':core')
-
 }
 
 /// The tasks set up for debugging are gdx_teavm_web_js_build and gdx_teavm_web_js_run .

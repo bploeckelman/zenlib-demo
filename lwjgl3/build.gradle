@@ -33,13 +33,19 @@ dependencies {
   implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
   implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
   implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+  implementation "com.github.xpenatan.jImGui:imgui-jni:$project.jImGuiVersion"
+  implementation "com.github.xpenatan.jImGui:imgui-jni_windows_x64:$project.jImGuiVersion"
+  implementation "com.github.xpenatan.jImGui:imgui-jni_linux_x64:$project.jImGuiVersion"
+  implementation "com.github.xpenatan.jImGui:imgui-jni_mac_x64:$project.jImGuiVersion"
+  implementation "com.github.xpenatan.jImGui:imgui-jni_mac_arm64:$project.jImGuiVersion"
   implementation project(':core')
-  implementation("com.badlogicgames.gdx:gdx-tools:$gdxVersion"){exclude group: 'com.badlogicgames.gdx', module: 'gdx-backend-lwjgl'}
+  implementation("com.badlogicgames.gdx:gdx-tools:$gdxVersion"){
+    exclude group: 'com.badlogicgames.gdx', module: 'gdx-backend-lwjgl'
+  }
 
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-backend-lwjgl3:$graalHelperVersion"
-      implementation "io.github.berstanio:gdx-svmhelper-extension-freetype:$graalHelperVersion"
-
+    implementation "io.github.berstanio:gdx-svmhelper-extension-freetype:$graalHelperVersion"
   }
   // Forces LWJGL3 to use at least $lwjgl3Version, currently 3.4.3, to avoid warnings on Java 25 and up.
   constraints{

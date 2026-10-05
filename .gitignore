@@ -1,3 +1,6 @@
+## Project:
+assets/imgui.ini
+
 ## Gradle:
 .gradle/
 gradle-app.setting
