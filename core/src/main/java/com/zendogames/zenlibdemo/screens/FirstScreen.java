@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.zendogames.zenlib.FramePool;
 import com.zendogames.zenlib.ZenGame;
+import com.zendogames.zenlib.input.ScreenInputProcessor;
 import com.zendogames.zenlib.screens.ZenScreen;
 import com.zendogames.zenlibdemo.Main;
 
@@ -25,11 +26,18 @@ public class FirstScreen extends ZenScreen {
     }
 
     @Override
-    public void update(float delta) {
-        if (!transitioning && Gdx.input.justTouched()) {
-            game.setScreen(new SecondScreen(game));
-        }
+    protected ScreenInputProcessor createInputProcessor() {
+        return new ScreenInputProcessor(this) {
+            @Override
+            protected boolean onTouchDown(int screenX, int screenY, int pointer, int button) {
+                game.setScreen(new SecondScreen(game));
+                return true;
+            }
+        };
+    }
 
+    @Override
+    public void update(float delta) {
         var numTemps = MathUtils.random(1, poolPeak);
         for (int i = 0; i < numTemps; i++) {
             FramePool.vec2(0, 0);
