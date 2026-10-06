@@ -2,16 +2,19 @@ package com.zendogames.zenlibdemo.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.github.xpenatan.jparser.runtime.helper.NativeBoolArray;
+import com.zendogames.zenlib.FramePool;
 import imgui.ImGui;
 import imgui.ImTemp;
 import imgui.enums.ImGuiCond;
+import imgui.enums.ImGuiTableColumnFlags;
+import imgui.enums.ImGuiTableFlags;
 
 public class DebugUI {
 
     public void render() {
-        ImGui.SetNextWindowCollapsed(true, ImGuiCond.Once);
+        ImGui.SetNextWindowCollapsed(false, ImGuiCond.Once);
         ImGui.SetNextWindowPos(ImTemp.ImVec2_1(0, 0), ImGuiCond.Once);
-        ImGui.SetNextWindowSize(ImTemp.ImVec2_1(Gdx.graphics.getWidth(), Gdx.graphics.getHeight() / 5f), ImGuiCond.Once);
+        ImGui.SetNextWindowSize(ImTemp.ImVec2_1(Gdx.graphics.getWidth(), 0), ImGuiCond.Once);
         ImGui.Begin("Debug");
         {
             // ---- ImGui Tool toggles ----
@@ -29,6 +32,26 @@ public class DebugUI {
             if (ImGuiTools.idStack.getValue(0))  ImGui.ShowIDStackToolWindow(ImGuiTools.idStack);
             if (ImGuiTools.about.getValue(0))    ImGui.ShowAboutWindow(ImGuiTools.about);
             if (ImGuiTools.styles.getValue(0))   ImGui.ShowStyleEditor();
+
+            // ---- Frame Pool usage ----
+            ImGui.SeparatorText("FramePool Usage");
+            var tableFlags = ImGuiTableFlags.Borders.or(ImGuiTableFlags.RowBg).or(ImGuiTableFlags.SizingStretchSame);
+            if (ImGui.BeginTable("frame-pool", 4, tableFlags)) {
+                ImGui.TableSetupColumn("Type",   ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("Active", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("Peak",   ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("Free",   ImGuiTableColumnFlags.WidthStretch);
+
+                ImGui.TableHeadersRow();
+                for (var type : FramePool.types()) {
+                    ImGui.TableNextRow();
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted(type.name());
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted(String.valueOf(FramePool.active(type)));
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted(String.valueOf(FramePool.peak(type)));
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted(String.valueOf(FramePool.free(type)));
+                }
+                ImGui.EndTable();
+            }
         }
         ImGui.End();
     }

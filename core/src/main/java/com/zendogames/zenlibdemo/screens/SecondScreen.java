@@ -3,7 +3,9 @@ package com.zendogames.zenlibdemo.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.zendogames.zenlib.FramePool;
 import com.zendogames.zenlib.ZenGame;
 import com.zendogames.zenlib.screens.ZenScreen;
 import com.zendogames.zenlibdemo.Main;
@@ -12,6 +14,8 @@ public class SecondScreen extends ZenScreen {
 
     Main main;
     TextureRegion region;
+
+    static final int poolPeak = 1000;
 
     public SecondScreen(ZenGame game) {
         super(game);
@@ -24,6 +28,12 @@ public class SecondScreen extends ZenScreen {
         if (!transitioning && Gdx.input.justTouched()) {
             game.setScreen(new FirstScreen(game));
         }
+
+        var numTemps = MathUtils.random(1, poolPeak);
+        for (int i = 0; i < numTemps; i++) {
+            FramePool.circle(0, 0, 0);
+        }
+
         super.update(delta);
     }
 

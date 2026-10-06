@@ -23,6 +23,7 @@ public class Main extends ZenGame {
     @Override
     protected void init() {
         ZenFlag.LOG_DEBUG.enable();
+        ZenFlag.DEBUG_FRAME_POOL.enable();
     }
 
     @Override public ZenConfig config() {
