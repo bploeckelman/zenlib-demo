@@ -12,7 +12,7 @@ import imgui.enums.ImGuiTableFlags;
 public class DebugUI {
 
     public void render() {
-        ImGui.SetNextWindowCollapsed(false, ImGuiCond.Once);
+        ImGui.SetNextWindowCollapsed(true, ImGuiCond.Once);
         ImGui.SetNextWindowPos(ImTemp.ImVec2_1(0, 0), ImGuiCond.Once);
         ImGui.SetNextWindowSize(ImTemp.ImVec2_1(Gdx.graphics.getWidth(), 0), ImGuiCond.Once);
         ImGui.Begin("Debug");
