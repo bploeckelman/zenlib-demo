@@ -1,6 +1,5 @@
 package com.zendogames.zenlibdemo.screens;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -8,6 +7,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.zendogames.zenlib.FramePool;
 import com.zendogames.zenlib.ZenGame;
 import com.zendogames.zenlib.input.ScreenInputProcessor;
+import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.screens.ZenScreen;
 import com.zendogames.zenlibdemo.Main;
 
@@ -23,6 +23,14 @@ public class FirstScreen extends ZenScreen {
         super(game);
         this.main = (Main) game;
         this.region = new TextureRegion(game.pixel);
+    }
+
+    @Override
+    protected WorldView createWorldView() {
+        var view = super.createWorldView();
+        view.centerOnResize = true;
+        view.clearColor.set(Color.LIGHT_GRAY);
+        return view;
     }
 
     @Override
@@ -49,8 +57,8 @@ public class FirstScreen extends ZenScreen {
     @Override
     public void render(float delta) {
         var margin = 50;
-        var w = Gdx.graphics.getWidth();
-        var h = Gdx.graphics.getHeight();
+        var w = worldView.worldWidth();
+        var h = worldView.worldHeight();
 
         ScreenUtils.clear(Color.LIGHT_GRAY);
         batch.begin();

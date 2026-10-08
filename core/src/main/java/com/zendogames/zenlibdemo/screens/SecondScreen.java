@@ -3,8 +3,8 @@ package com.zendogames.zenlibdemo.screens;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.github.tommyettinger.gdcrux.PointI2;
 import com.zendogames.zenlib.Log;
 import com.zendogames.zenlib.ZenFlag;
@@ -13,11 +13,15 @@ import com.zendogames.zenlib.assets.AnimType;
 import com.zendogames.zenlib.assets.ZenAnimHero;
 import com.zendogames.zenlib.assets.ZenAtlas;
 import com.zendogames.zenlib.input.ScreenInputProcessor;
+import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.screens.ZenScreen;
 import com.zendogames.zenlib.sim.SimulationStep;
 import com.zendogames.zenlibdemo.Main;
 
 public class SecondScreen extends ZenScreen {
+
+    static final int WORLD_WIDTH  = 320;
+    static final int WORLD_HEIGHT = 180;
 
     Main main;
     TextureRegion region;
@@ -36,19 +40,20 @@ public class SecondScreen extends ZenScreen {
         this.main = (Main) game;
         this.region = new TextureRegion(game.pixel);
         this.sim = new SimulationStep();
-        this.pos = new PointI2();
+        this.pos = new PointI2(WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
         this.timer = duration;
         this.animIndex = 0;
         this.anim = anims[animIndex];
 
-        var windowW = windowCamera.viewportWidth;
-        var windowH = windowCamera.viewportHeight;
-        worldCamera.setToOrtho(false, windowW / 4, windowH / 4);
-        worldCamera.update();
-
-        pos.set(worldCamera.viewportWidth / 2, worldCamera.viewportHeight / 2);
-
         ZenAtlas.SPRITES.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+    }
+
+    @Override
+    protected WorldView createWorldView() {
+        var view = new WorldView(worldCamera, WORLD_WIDTH, WORLD_HEIGHT);
+        view.centerOnResize = true;
+        view.clearColor.set(Color.LIGHT_GRAY);
+        return view;
     }
 
     @Override
@@ -72,6 +77,12 @@ public class SecondScreen extends ZenScreen {
         };
     }
 
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        pos.set(worldCamera.viewportWidth / 2, worldCamera.viewportHeight / 2);
+    }
+
     private void stepSimulation(float dt) {
         if (ZenFlag.FRAME_STEP.on()) {
             Log.info("Sim", "stepped 1 frame (manual)");
@@ -93,13 +104,11 @@ public class SecondScreen extends ZenScreen {
     }
 
     @Override
-    public void render(float delta) {
+    public void renderWorld(SpriteBatch batch) {
         var margin = 50 / 4;
-        var w = worldCamera.viewportWidth;
-        var h = worldCamera.viewportHeight;
+        var w = worldView.worldWidth();
+        var h = worldView.worldHeight();
 
-        ScreenUtils.clear(Color.LIGHT_GRAY);
-        batch.setProjectionMatrix(worldCamera.combined);
         batch.begin();
         {
             batch.setColor(Color.CYAN);
