@@ -61,7 +61,7 @@ public class SecondScreen extends ZenScreen {
         return new ScreenInputProcessor(this) {
             @Override
             protected boolean onTouchDown(int screenX, int screenY, int pointer, int button) {
-                game.setScreen(new FirstScreen(game));
+                game.setScreen(new EcsScreen(game));
                 return true;
             }
 
