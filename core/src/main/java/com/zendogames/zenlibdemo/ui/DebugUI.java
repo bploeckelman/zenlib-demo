@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.github.xpenatan.jparser.runtime.helper.NativeBoolArray;
 import com.zendogames.zenlib.FramePool;
 import com.zendogames.zenlib.ecs.World;
+import com.zendogames.zenlib.ecs.systems.ContactSystem;
 import imgui.ImGui;
 import imgui.ImTemp;
 import imgui.enums.ImGuiCond;
@@ -68,6 +69,7 @@ public class DebugUI {
         // until a click outside it. The bindings need a non-null p_open, hence EcsFlag.open.
         if (ImGui.Begin("ECS", EcsFlag.open, ImGuiWindowFlags.NoFocusOnAppearing)) {
             ImGui.TextUnformatted("entities: " + world.entities().size);
+            ImGui.TextUnformatted("tick: " + world.step.tick);
             ImGui.TextUnformatted("alpha: %.3f".formatted(world.alpha()));
             ImGui.TextUnformatted("updating: " + world.isUpdating());
 
@@ -100,6 +102,43 @@ public class DebugUI {
         ImGui.End();
     }
 
+    /** This tick's contact count, the log toggles, and the ENTER / EXIT transition log, newest last. */
+    public void contacts(ContactSystem system) {
+        if (!ContactsFlag.open.getValue(0)) return;
+
+        ImGui.SetNextWindowPos(ImTemp.ImVec2_1(0, 400), ImGuiCond.Once);
+        ImGui.SetNextWindowSize(ImTemp.ImVec2_1(520, 300), ImGuiCond.Once);
+        if (ImGui.Begin("Contacts", ContactsFlag.open, ImGuiWindowFlags.NoFocusOnAppearing)) {
+            ImGui.TextUnformatted("this tick: " + system.contacts.size);
+
+            ContactsFlag.paused.setValue(0, system.logPaused);
+            if (ImGui.Checkbox("pause log (P)", ContactsFlag.paused)) {
+                system.logPaused = ContactsFlag.paused.getValue(0);
+            }
+            ImGui.SameLine();
+            ContactsFlag.blockedExits.setValue(0, system.logBlockedExits);
+            if (ImGui.Checkbox("blocked exits (X)", ContactsFlag.blockedExits)) {
+                system.logBlockedExits = ContactsFlag.blockedExits.getValue(0);
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("clear")) {
+                system.log.clear();
+            }
+
+            ImGui.Separator();
+            if (ImGui.BeginChild("log")) {
+                for (var line : system.log) {
+                    ImGui.TextUnformatted(line);
+                }
+                if (!system.logPaused) {
+                    ImGui.SetScrollHereY(1f);
+                }
+            }
+            ImGui.EndChild();
+        }
+        ImGui.End();
+    }
+
     private static class ImGuiTools {
         static final NativeBoolArray demo     = new NativeBoolArray(1);
         static final NativeBoolArray metrics  = new NativeBoolArray(1);
@@ -119,6 +158,17 @@ public class DebugUI {
         static final NativeBoolArray open = new NativeBoolArray(1);
         /** One checkbox buffer reused per table row; PushID keeps the repeated label unique. */
         static final NativeBoolArray systemEnabled = new NativeBoolArray(1);
+
+        static {
+            open.setValue(0, true);
+        }
+    }
+
+    /** Same holder pattern for the Contacts window. */
+    static final class ContactsFlag {
+        static final NativeBoolArray open         = new NativeBoolArray(1);
+        static final NativeBoolArray paused       = new NativeBoolArray(1);
+        static final NativeBoolArray blockedExits = new NativeBoolArray(1);
 
         static {
             open.setValue(0, true);

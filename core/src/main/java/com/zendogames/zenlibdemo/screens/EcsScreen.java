@@ -41,6 +41,7 @@ import com.zendogames.zenlibdemo.ecs.systems.SpawnSystem;
  *   H       tag every entity HURT: HurtSystem stops it, squashes + plays HURT, despawns after 1 s
  *   C       world.clear() then respawn the backdrop; heroes refill next tick, ids start at 0 again
  *   T       transition to a fresh EcsScreen: two worlds alive and updating at once
+ *   N       on to CollisionScreen
  *   B       back to FirstScreen
  *   R       toggle RenderSystem.enabled
  *   9       one tick while FRAME_STEP (0) is on
@@ -49,7 +50,7 @@ import com.zendogames.zenlibdemo.ecs.systems.SpawnSystem;
  */
 public class EcsScreen extends ZenScreen {
 
-    private static final String TAG = "EcsScreen";
+    private static final String TAG = EcsScreen.class.getSimpleName();
 
     static final int VIEW_WIDTH    = 320;
     static final int VIEW_HEIGHT   = 180;
@@ -118,6 +119,7 @@ public class EcsScreen extends ZenScreen {
                         factory.backdrop(pixel, MAP_WIDTH, MAP_HEIGHT);
                     }
                     case Input.Keys.T -> game.setScreen(new EcsScreen(game));
+                    case Input.Keys.N -> game.setScreen(new CollisionScreen(game));
                     case Input.Keys.B -> game.setScreen(new FirstScreen(game));
                     case Input.Keys.R -> {
                         var render = world.getSystem(RenderSystem.class);
