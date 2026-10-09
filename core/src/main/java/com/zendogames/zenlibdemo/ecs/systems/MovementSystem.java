@@ -4,28 +4,27 @@ import com.zendogames.zenlib.ecs.Entity;
 import com.zendogames.zenlib.ecs.Family;
 import com.zendogames.zenlib.ecs.IteratingSystem;
 import com.zendogames.zenlib.ecs.SystemOrder;
-import com.zendogames.zenlibdemo.ecs.components.Animator;
-import com.zendogames.zenlibdemo.ecs.components.Position;
+import com.zendogames.zenlib.ecs.components.Animator;
+import com.zendogames.zenlib.ecs.components.Position;
 import com.zendogames.zenlibdemo.ecs.components.Velocity;
 
 /** Integrates {@link Velocity} onto {@link Position} and bounces off the world edges. */
 public class MovementSystem extends IteratingSystem {
 
-    private final int worldWidth;
-    private final int worldHeight;
+    private final int mapWidth;
+    private final int mapHeight;
 
-    public MovementSystem(int worldWidth, int worldHeight) {
+    public MovementSystem(int mapWidth, int mapHeight) {
         super(Family.all(Position.TYPE, Velocity.TYPE), SystemOrder.PHYSICS);
-        this.worldWidth = worldWidth;
-        this.worldHeight = worldHeight;
+        this.mapWidth  = mapWidth;
+        this.mapHeight = mapHeight;
     }
 
     @Override
     protected void process(Entity e, float dt) {
         var pos = Position.get(e);
         var vel = Velocity.get(e);
-        vel.prevX = pos.x;
-        vel.prevY = pos.y;
+        pos.savePrev(); // important: save previous position before moving, once per tick
 
         vel.remX += vel.dx * dt;
         vel.remY += vel.dy * dt;
@@ -38,11 +37,11 @@ public class MovementSystem extends IteratingSystem {
         pos.y += moveY;
 
         var animator = Animator.get(e);
-        int w = (animator != null) ? animator.frame().getRegionWidth()  : 0;
-        int h = (animator != null) ? animator.frame().getRegionHeight() : 0;
-        if (pos.x < 0)               { pos.x = 0;               vel.dx =  Math.abs(vel.dx); }
-        if (pos.x > worldWidth  - w) { pos.x = worldWidth  - w; vel.dx = -Math.abs(vel.dx); }
-        if (pos.y < 0)               { pos.y = 0;               vel.dy =  Math.abs(vel.dy); }
-        if (pos.y > worldHeight - h) { pos.y = worldHeight - h; vel.dy = -Math.abs(vel.dy); }
+        int w = (animator != null) ? (int) animator.size.x : 0;
+        int h = (animator != null) ? (int) animator.size.y : 0;
+        if (pos.x < 0)             { pos.x = 0;             vel.dx =  Math.abs(vel.dx); }
+        if (pos.x > mapWidth  - w) { pos.x = mapWidth  - w; vel.dx = -Math.abs(vel.dx); }
+        if (pos.y < 0)             { pos.y = 0;             vel.dy =  Math.abs(vel.dy); }
+        if (pos.y > mapHeight - h) { pos.y = mapHeight - h; vel.dy = -Math.abs(vel.dy); }
     }
 }

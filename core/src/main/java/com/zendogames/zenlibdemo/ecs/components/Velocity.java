@@ -17,19 +17,10 @@ public class Velocity implements Component {
     public float remX;
     public float remY;
 
-    // TODO: example only, should probably live elsewhere when provided by zenlib
-    /** Position at the start of the last tick, for render interpolation. */
-    public int prevX, prevY;
-
-    public Velocity(float dx, float dy, Position start) {
+    public Velocity(float dx, float dy) {
         this.dx = dx;
         this.dy = dy;
         this.remX = 0;
         this.remY = 0;
-        this.prevX = start.x;
-        this.prevY = start.y;
     }
-
-    private final Link link = new Link(TYPE);
-    @Override public Link link() { return link; }
 }

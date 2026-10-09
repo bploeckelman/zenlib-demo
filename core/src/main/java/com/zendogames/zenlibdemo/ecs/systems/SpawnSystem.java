@@ -5,25 +5,25 @@ import com.zendogames.zenlib.ecs.EntitySystem;
 import com.zendogames.zenlib.ecs.Family;
 import com.zendogames.zenlib.ecs.SystemOrder;
 import com.zendogames.zenlib.ecs.World;
+import com.zendogames.zenlib.ecs.components.Animator;
+import com.zendogames.zenlib.ecs.components.Position;
 import com.zendogames.zenlibdemo.ecs.Factory;
-import com.zendogames.zenlibdemo.ecs.components.Animator;
-import com.zendogames.zenlibdemo.ecs.components.Position;
 
 public class SpawnSystem extends EntitySystem {
 
     private final Factory factory;
     private final int target;
-    private final int worldWidth;
-    private final int worldHeight;
+    private final int mapWidth;
+    private final int mapHeight;
 
     private Family heroes;
 
-    public SpawnSystem(Factory factory, int target, int worldWidth, int worldHeight) {
+    public SpawnSystem(Factory factory, int target, int mapWidth, int mapHeight) {
         super(SystemOrder.DECIDE);
-        this.factory = factory;
-        this.target = target;
-        this.worldWidth = worldWidth;
-        this.worldHeight = worldHeight;
+        this.factory   = factory;
+        this.target    = target;
+        this.mapWidth  = mapWidth;
+        this.mapHeight = mapHeight;
     }
 
     @Override
@@ -37,8 +37,9 @@ public class SpawnSystem extends EntitySystem {
 
         int missing = target - heroes.size();
         for (int i = 0; i < missing; i++) {
-            factory.hero(MathUtils.random(0, worldWidth - heroSize), MathUtils.random(0, worldHeight - heroSize));
+            var x = MathUtils.random(0, mapWidth  - heroSize);
+            var y = MathUtils.random(0, mapHeight - heroSize);
+            factory.hero(x, y);
         }
     }
-
 }
