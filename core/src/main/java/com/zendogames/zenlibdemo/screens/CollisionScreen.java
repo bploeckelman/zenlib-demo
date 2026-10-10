@@ -42,6 +42,7 @@ import com.zendogames.zenlibdemo.ecs.systems.MovementSystem;
  *   P       pause the contact log; X include BLOCKED exits in it
  *   F       follow the hero nearest the pointer; G back to the map center
  *   C       world.clear() then rebuild the level
+ *   N       transition to TimerScreen
  *   T       transition to a fresh CollisionScreen; B back to FirstScreen
  *   9       one tick while FRAME_STEP (0) is on
  * </pre>
@@ -50,8 +51,12 @@ public class CollisionScreen extends ZenScreen {
 
     private static final String TAG = CollisionScreen.class.getSimpleName();
 
-    static final int VIEW_WIDTH  = 320;
-    static final int VIEW_HEIGHT = 180;
+    // NOTE: setting view size to be half map size allows camera follow to be exercised
+    // TODO: this screen will be consolidated with others in the near future, so leaving for now
+//    static final int VIEW_WIDTH  = 320;
+//    static final int VIEW_HEIGHT = 180;
+    static final int VIEW_WIDTH  = 640;
+    static final int VIEW_HEIGHT = 360;
     static final int MAP_WIDTH   = 640;
     static final int MAP_HEIGHT  = 360;
     static final int WALL        = 8;
@@ -137,6 +142,7 @@ public class CollisionScreen extends ZenScreen {
                         buildLevel();
                     }
                     case Input.Keys.T -> game.setScreen(new CollisionScreen(game));
+                    case Input.Keys.N -> game.setScreen(new TimerScreen(game));
                     case Input.Keys.B -> game.setScreen(new FirstScreen(game));
                     default -> { return false; }
                 }

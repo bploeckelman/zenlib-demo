@@ -29,7 +29,6 @@ public class HurtSystem extends IteratingSystem {
             animator.scale.set(1.4f, 0.6f);
             e.remove(Velocity.TYPE);
             // NOTE: represents duration for 'hurt' anim and tag, not hero's ephemeral lifetime
-            // TODO: consider a built-in Timers component where multiple timers can be added by name, tick independently, and auto-remove
             e.add(new Lifetime(1f)); // replaces any existing lifetime
         }
     }
