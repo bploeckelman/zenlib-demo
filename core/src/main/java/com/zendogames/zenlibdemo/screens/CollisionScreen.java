@@ -26,6 +26,8 @@ import com.zendogames.zenlib.input.ScreenInputProcessor;
 import com.zendogames.zenlib.render.CameraFollow;
 import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.screens.ZenScreen;
+import com.zendogames.zenlib.ui.DebugView;
+import com.zendogames.zenlib.ui.DebugViews;
 import com.zendogames.zenlibdemo.Main;
 import com.zendogames.zenlibdemo.ecs.DemoContacts;
 import com.zendogames.zenlibdemo.ecs.Factory;
@@ -69,6 +71,8 @@ public class CollisionScreen extends ZenScreen {
     final TextureRegion pixel;
     final CameraFollow cameraFollow;
     final Vector2 mapCenter;
+    final DebugView ecsView;
+    final DebugView contactsView;
 
     Factory.HeroShape spawnShape = Factory.HeroShape.CAPSULE;
 
@@ -80,6 +84,8 @@ public class CollisionScreen extends ZenScreen {
         this.collision = new CollisionWorld(world);
         this.contactSystem = new ContactSystem(collision, new DemoContacts());
         this.pixel = new TextureRegion(game.pixel);
+        this.ecsView = DebugViews.ecs(world);
+        this.contactsView = DebugViews.contacts(contactSystem);
 
         world.addSystem(new LifetimeSystem());
         world.addSystem(new MovementSystem(MAP_WIDTH, MAP_HEIGHT, collision));
@@ -199,9 +205,7 @@ public class CollisionScreen extends ZenScreen {
 
     @Override
     public void renderImGui() {
-        main.debugUI.render();
-        main.debugUI.ecs(world);
-        main.debugUI.contacts(contactSystem);
+        main.debugUI.render(ecsView, contactsView);
     }
 
     @Override

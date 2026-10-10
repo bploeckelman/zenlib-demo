@@ -16,25 +16,19 @@ import com.zendogames.zenlib.ecs.systems.TimerSystem;
 import com.zendogames.zenlib.input.ScreenInputProcessor;
 import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.screens.ZenScreen;
+import com.zendogames.zenlib.ui.DebugActions;
+import com.zendogames.zenlib.ui.DebugView;
+import com.zendogames.zenlib.ui.DebugViews;
 import com.zendogames.zenlibdemo.Main;
 import com.zendogames.zenlibdemo.ecs.EnemyFactory;
 import com.zendogames.zenlibdemo.ecs.Factory;
 import com.zendogames.zenlibdemo.ecs.systems.MovementSystem;
 
 /**
- * Simple enemies built from {@code Timers} lambdas, one key each, on a map the size of the view.
- * <pre>
- *   click   spawn a spitter at the pointer (shoots left every 3s)
- *   O       spawn a blob at the pointer, hopping toward the map center
- *   D       spawn a door at the pointer: opens (pops, despawns) once no enemy is left
- *   K       kill every enemy; any doors open a quarter second later
- *   P       hit-stop 0.5s: every timer freezes with the simulation
- *   L       toggle LOG_TIMERS
- *   C       world.clear(): no timer fires afterwards, Timers.onRemove cancelled them
- *   T       transition to a fresh TimerScreen
- *   B       back to EcsScreen
- *   9       one tick while FRAME_STEP (0) is on: timers advance one tick
- * </pre>
+ * Simple enemies built from {@code Timers} lambdas on a map the size of the view. The controls are
+ * the {@link DebugActions} in the Debug window's "Screen" section (keys in parentheses there):
+ * arm a spawn and click in the world, or press its key. A click with nothing armed spawns a spitter.
+ * {@code 9} steps one tick while {@code FRAME_STEP} ({@code 0}) is on.
  */
 public class TimerScreen extends ZenScreen {
 
@@ -48,6 +42,9 @@ public class TimerScreen extends ZenScreen {
     final Factory factory;
     final EnemyFactory enemies;
     final TextureRegion pixel;
+    final DebugActions actions;
+    final DebugView ecsView;
+    final DebugView timersView;
 
     public TimerScreen(ZenGame game) {
         super(game);
@@ -67,6 +64,23 @@ public class TimerScreen extends ZenScreen {
         factory.backdrop(pixel, VIEW_WIDTH, VIEW_HEIGHT);
         enemies.spitter(VIEW_WIDTH - 40, 40);
         enemies.door(20, 40);
+
+        this.ecsView = DebugViews.ecs(world);
+        this.timersView = DebugViews.timers(world);
+        this.actions = new DebugActions()
+                .defaultClick(enemies::spitter)
+                .arm("spitter", Input.Keys.S, enemies::spitter)
+                .arm("blob",    Input.Keys.O, (x, y) -> enemies.blob(x, y, VIEW_WIDTH / 2))
+                .arm("door",    Input.Keys.D, enemies::door)
+                .add("kill enemies",  Input.Keys.K, () -> Log.info(TAG, "killed %d enemies", enemies.killEnemies()))
+                .add("hit-stop 0.5s", Input.Keys.P, () -> Time.pauseFor(0.5f))
+                .add("LOG_TIMERS",    Input.Keys.L, ZenFlag.LOG_TIMERS::toggle)
+                .add("clear world",   Input.Keys.C, () -> {
+                    world.clear();
+                    factory.backdrop(pixel, VIEW_WIDTH, VIEW_HEIGHT);
+                })
+                .add("fresh TimerScreen", Input.Keys.T, () -> game.setScreen(new TimerScreen(game)))
+                .add("EcsScreen",         Input.Keys.B, () -> game.setScreen(new EcsScreen(game)));
     }
 
     @Override
@@ -81,27 +95,12 @@ public class TimerScreen extends ZenScreen {
         return new ScreenInputProcessor(this) {
             @Override
             protected boolean onTouchDown(int screenX, int screenY, int pointer, int button) {
-                enemies.spitter((int) this.pointer.x, (int) this.pointer.y);
-                return true;
+                return actions.click((int) this.pointer.x, (int) this.pointer.y);
             }
 
             @Override
             protected boolean onKeyDown(int keycode) {
-                switch (keycode) {
-                    case Input.Keys.O -> enemies.blob((int) pointer.x, (int) pointer.y, VIEW_WIDTH / 2);
-                    case Input.Keys.D -> enemies.door((int) pointer.x, (int) pointer.y);
-                    case Input.Keys.K -> Log.info(TAG, "killed %d enemies", enemies.killEnemies());
-                    case Input.Keys.P -> Time.pauseFor(0.5f);
-                    case Input.Keys.L -> ZenFlag.LOG_TIMERS.toggle();
-                    case Input.Keys.C -> {
-                        world.clear();
-                        factory.backdrop(pixel, VIEW_WIDTH, VIEW_HEIGHT);
-                    }
-                    case Input.Keys.T -> game.setScreen(new TimerScreen(game));
-                    case Input.Keys.B -> game.setScreen(new EcsScreen(game));
-                    default -> { return false; }
-                }
-                return true;
+                return actions.key(keycode);
             }
 
             @Override
@@ -130,8 +129,7 @@ public class TimerScreen extends ZenScreen {
 
     @Override
     public void renderImGui() {
-        main.debugUI.render();
-        main.debugUI.ecs(world);
+        main.debugUI.render(actions, timersView, ecsView);
     }
 
     @Override

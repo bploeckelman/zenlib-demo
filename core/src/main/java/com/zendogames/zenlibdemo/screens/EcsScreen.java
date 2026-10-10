@@ -23,6 +23,8 @@ import com.zendogames.zenlib.input.ScreenInputProcessor;
 import com.zendogames.zenlib.render.CameraFollow;
 import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.screens.ZenScreen;
+import com.zendogames.zenlib.ui.DebugView;
+import com.zendogames.zenlib.ui.DebugViews;
 import com.zendogames.zenlibdemo.Main;
 import com.zendogames.zenlibdemo.ecs.Factory;
 import com.zendogames.zenlibdemo.ecs.Tags;
@@ -64,6 +66,7 @@ public class EcsScreen extends ZenScreen {
     final TextureRegion pixel;
     final CameraFollow cameraFollow;
     final Vector2 mapCenter;
+    final DebugView ecsView;
 
     public EcsScreen(ZenGame game) {
         super(game);
@@ -71,6 +74,7 @@ public class EcsScreen extends ZenScreen {
         this.pixel = new TextureRegion(game.pixel);
         this.world = new World();
         this.factory = new Factory(world);
+        this.ecsView = DebugViews.ecs(world);
 
         world.addSystem(new SpawnSystem(factory, TARGET_HEROES, MAP_WIDTH, MAP_HEIGHT));
         world.addSystem(new HurtSystem());
@@ -189,8 +193,7 @@ public class EcsScreen extends ZenScreen {
 
     @Override
     public void renderImGui() {
-        main.debugUI.render();
-        main.debugUI.ecs(world);
+        main.debugUI.render(ecsView);
     }
 
     @Override
