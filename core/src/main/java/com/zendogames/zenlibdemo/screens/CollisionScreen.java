@@ -2,94 +2,71 @@ package com.zendogames.zenlibdemo.screens;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.zendogames.zenlib.Log;
-import com.zendogames.zenlib.Time;
 import com.zendogames.zenlib.ZenFlag;
 import com.zendogames.zenlib.ZenGame;
-import com.zendogames.zenlib.assets.ZenAtlas;
-import com.zendogames.zenlib.collision.CollisionDraw;
-import com.zendogames.zenlib.collision.CollisionWorld;
 import com.zendogames.zenlib.ecs.Entity;
-import com.zendogames.zenlib.ecs.World;
 import com.zendogames.zenlib.ecs.components.Animator;
+import com.zendogames.zenlib.ecs.components.Lifetime;
+import com.zendogames.zenlib.ecs.components.Name;
 import com.zendogames.zenlib.ecs.components.Position;
-import com.zendogames.zenlib.ecs.systems.*;
-import com.zendogames.zenlib.input.ScreenInputProcessor;
+import com.zendogames.zenlib.ecs.systems.ContactSystem;
+import com.zendogames.zenlib.ecs.systems.LifetimeSystem;
+import com.zendogames.zenlib.ecs.systems.MovementSystem;
 import com.zendogames.zenlib.render.CameraFollow;
 import com.zendogames.zenlib.render.WorldView;
-import com.zendogames.zenlib.screens.ZenScreen;
-import com.zendogames.zenlib.ui.DebugView;
 import com.zendogames.zenlib.ui.DebugViews;
-import com.zendogames.zenlibdemo.Main;
 import com.zendogames.zenlibdemo.ecs.DemoContacts;
 import com.zendogames.zenlibdemo.ecs.Factory;
+import com.zendogames.zenlibdemo.ecs.Level;
+import com.zendogames.zenlibdemo.ecs.systems.SpawnSystem;
 
 /**
- * Heroes bouncing around a walled 640x360 pixel-art map through through a {@link CollisionWorld}: solid walls, a
- * one-way platform and a one-way wall, a ramp grid, a trigger zone, and hero-on-hero bumps reported through
- * {@link ContactSystem}.
+ * Heroes bouncing around a walled 640x360 map seen through a 320x180 view: solid blocks, a one-way
+ * platform and a one-way wall, a ramp grid, a trigger zone, hero-on-hero bumps through
+ * {@link ContactSystem}, and a {@link CameraFollow} clamped to the map. Everything is a
+ * {@code DebugActions} button in the Debug window, keys in parentheses there:
  * <pre>
- *   click   spawn a colliding hero at the pointer
- *   K       toggle the spawned shape: capsule (default) or rect
- *   2       DEBUG_RENDER: collider outlines over everything (library number row)
- *   P       pause the contact log; X include BLOCKED exits in it
- *   F       follow the hero nearest the pointer; G back to the map center
- *   C       world.clear() then rebuild the level
- *   N       transition to TimerScreen
- *   T       transition to a fresh CollisionScreen; B back to FirstScreen
- *   9       one tick while FRAME_STEP (0) is on
+ *   hero           arm a spawn at the pointer (also the unarmed click); capsule/rect picks its shape
+ *   auto-fill      SpawnSystem keeps 10 short-lived heroes alive, spawning from inside a system
+ *   follow         the hero nearest the pointer, or the map center; a followed hero that despawns
+ *                  hands the camera back to the center
+ *   RENDER_INTERP  off, tracking and heroes stutter on a high refresh display
+ *   contact log    pause it, or include BLOCKED exits
+ *   rebuild        world.clear() then the level again: ids start at 0
  * </pre>
  */
-public class CollisionScreen extends ZenScreen {
+public class CollisionScreen extends DemoScreen {
 
     private static final String TAG = CollisionScreen.class.getSimpleName();
 
-    // NOTE: setting view size to be half map size allows camera follow to be exercised
-    // TODO: this screen will be consolidated with others in the near future, so leaving for now
-//    static final int VIEW_WIDTH  = 320;
-//    static final int VIEW_HEIGHT = 180;
-    static final int VIEW_WIDTH  = 640;
-    static final int VIEW_HEIGHT = 360;
-    static final int MAP_WIDTH   = 640;
-    static final int MAP_HEIGHT  = 360;
-    static final int WALL        = 8;
+    // The view is half the map so the camera follow is exercised
+    static final int VIEW_WIDTH    = 320;
+    static final int VIEW_HEIGHT   = 180;
+    static final int MAP_WIDTH     = 640;
+    static final int MAP_HEIGHT    = 360;
+    static final int TARGET_HEROES = 10;
 
-    final Main main;
-    final World world;
-    final Factory factory;
-    final CollisionWorld collision;
     final ContactSystem contactSystem;
-    final TextureRegion pixel;
+    final SpawnSystem autoFill;
     final CameraFollow cameraFollow;
     final Vector2 mapCenter;
-    final DebugView ecsView;
-    final DebugView moversView;
-    final DebugView contactsView;
 
     Factory.HeroShape spawnShape = Factory.HeroShape.CAPSULE;
 
     public CollisionScreen(ZenGame game) {
-        super(game);
-        this.main = (Main) game;
-        this.world = new World();
-        this.factory = new Factory(world);
-        this.collision = new CollisionWorld(world);
+        super(game, /*withCollision*/ true);
         this.contactSystem = new ContactSystem(collision, new DemoContacts());
-        this.pixel = new TextureRegion(game.pixel);
-        this.ecsView = DebugViews.ecs(world);
-        this.moversView = DebugViews.movers(world);
-        this.contactsView = DebugViews.contacts(contactSystem);
+        this.autoFill = new SpawnSystem(TARGET_HEROES, MAP_WIDTH, MAP_HEIGHT, this::temporaryHero);
 
+        world.addSystem(autoFill);
         world.addSystem(new LifetimeSystem());
         world.addSystem(new MovementSystem(collision));
         world.addSystem(contactSystem);
-        world.addSystem(new AnimationSystem());
-        world.addSystem(new RenderSystem(batch));
+        addCommonSystems();
 
         this.mapCenter = new Vector2(MAP_WIDTH / 2f, MAP_HEIGHT / 2f);
         this.cameraFollow = new CameraFollow(worldCamera);
@@ -97,21 +74,61 @@ public class CollisionScreen extends ZenScreen {
         this.cameraFollow.follow(mapCenter);
 
         buildLevel();
-        ZenAtlas.SPRITES.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+
+        debugViews.add(DebugViews.contacts(contactSystem));
+        debugViews.add(DebugViews.movers(world));
+        actions.defaultClick(this::hero)
+               .arm("hero",              Input.Keys.H, this::hero)
+               .add("capsule/rect",      Input.Keys.K, this::toggleShape)
+               .add("auto-fill 10",      Input.Keys.A, () -> autoFill.enabled = !autoFill.enabled)
+               .add("follow nearest",    Input.Keys.F, this::followNearest)
+               .add("follow center",     Input.Keys.G, () -> cameraFollow.follow(mapCenter))
+               .add("RENDER_INTERP",     Input.Keys.I, ZenFlag.RENDER_INTERP::toggle)
+               .add("pause contact log", Input.Keys.P, () -> contactSystem.logPaused = !contactSystem.logPaused)
+               .add("log BLOCKED exits", Input.Keys.X, () -> contactSystem.logBlockedExits = !contactSystem.logBlockedExits)
+               .add("rebuild level",     Input.Keys.R, () -> { world.clear(); buildLevel(); });
     }
 
     private void buildLevel() {
-        factory.backdrop(pixel, MAP_WIDTH, MAP_HEIGHT);
-        factory.wall(pixel, "wall:left",   0,                0,                 WALL,      MAP_HEIGHT);
-        factory.wall(pixel, "wall:right",  MAP_WIDTH - WALL, 0,                 WALL,      MAP_HEIGHT);
-        factory.wall(pixel, "wall:bottom", 0,                0,                 MAP_WIDTH, WALL);
-        factory.wall(pixel, "wall:top",    0,                MAP_HEIGHT - WALL, MAP_WIDTH, WALL);
-        factory.wall(pixel, "block",       300,              150, 40, 60);
+        Level.walled(factory, pixel, MAP_WIDTH, MAP_HEIGHT, WALL);
+        factory.wall(pixel, "block", 300, 150, 40, 60);
         factory.platform(pixel, 100, 250, 120);
         factory.oneWayWall(pixel, 480, 60, 100);
         factory.trigger(pixel, "zone", 420, 220, 100, 80);
         factory.ramps(120, WALL);
         factory.collidingHero(MAP_WIDTH / 2, MAP_HEIGHT / 2, Factory.HeroShape.CAPSULE);
+    }
+
+    private void hero(int x, int y) {
+        factory.collidingHero(x, y, spawnShape);
+    }
+
+    /** The auto-fill's hero: the same, despawning after a while so the fill keeps spawning. */
+    private void temporaryHero(int x, int y) {
+        factory.collidingHero(x, y, spawnShape).add(new Lifetime(MathUtils.random(5f, 15f)));
+    }
+
+    private void toggleShape() {
+        spawnShape = (spawnShape == Factory.HeroShape.CAPSULE) ? Factory.HeroShape.RECT : Factory.HeroShape.CAPSULE;
+        Log.info(TAG, "spawning %s heroes", spawnShape);
+    }
+
+    private void followNearest() {
+        var pointer  = inputProcessor.pointer;
+        var entities = collision.family().entities();
+        var best     = (Entity) null;
+        var bestDist = Float.MAX_VALUE;
+        for (int i = 0; i < entities.size; i++) {
+            var e = entities.get(i);
+            if (!Animator.has(e)) continue;
+            var pos  = Position.get(e);
+            var dist = pointer.dst2(pos.x, pos.y);
+            if (dist < bestDist) { best = e; bestDist = dist; }
+        }
+        if (best != null) {
+            cameraFollow.follow(best, /*snap*/ false);
+            Log.info(TAG, "following %s (%s)", Name.of(best), best);
+        }
     }
 
     @Override
@@ -122,91 +139,10 @@ public class CollisionScreen extends ZenScreen {
     }
 
     @Override
-    protected ScreenInputProcessor createInputProcessor() {
-        return new ScreenInputProcessor(this) {
-            @Override
-            protected boolean onTouchDown(int screenX, int screenY, int pointer, int button) {
-                factory.collidingHero((int) this.pointer.x, (int) this.pointer.y, spawnShape);
-                return true;
-            }
-
-            @Override
-            protected boolean onKeyDown(int keycode) {
-                switch (keycode) {
-                    case Input.Keys.K -> {
-                        spawnShape = (spawnShape == Factory.HeroShape.CAPSULE) ? Factory.HeroShape.RECT : Factory.HeroShape.CAPSULE;
-                        Log.info(TAG, "spawning %s hero", spawnShape);
-                    }
-                    case Input.Keys.P -> contactSystem.logPaused = !contactSystem.logPaused;
-                    case Input.Keys.X -> contactSystem.logBlockedExits = !contactSystem.logBlockedExits;
-                    case Input.Keys.F -> followNearest();
-                    case Input.Keys.G -> cameraFollow.follow(mapCenter);
-                    case Input.Keys.C -> { world.clear(); buildLevel(); }
-                    case Input.Keys.T -> game.setScreen(new CollisionScreen(game));
-                    case Input.Keys.M -> game.setScreen(new MovementScreen(game));
-                    case Input.Keys.N -> game.setScreen(new TimerScreen(game));
-                    case Input.Keys.B -> game.setScreen(new FirstScreen(game));
-                    default -> { return false; }
-                }
-                return true;
-            }
-
-            @Override
-            protected boolean debugKey(int keycode) {
-                if (keycode == Input.Keys.NUM_9) {
-                    world.step.requestStep();
-                    return true;
-                }
-                return super.debugKey(keycode);
-            }
-        };
-    }
-
-    private void followNearest() {
-        var pointer = inputProcessor.pointer;
-        var entities = collision.family().entities();
-        var best = (Entity) null;
-        var bestDist = Float.MAX_VALUE;
-        for (int i = 0; i < entities.size; i++) {
-            var e = entities.get(i);
-            if (!Animator.has(e)) continue;
-            var pos = Position.get(e);
-            var dist = pointer.dst2(pos.x, pos.y);
-            if (dist < bestDist) { best = e; bestDist = dist; }
-        }
-        if (best != null) {
-            cameraFollow.follow(best, /*snap*/ false);
-        }
-    }
-
-    @Override
-    public void update(float dt) {
-        world.update(dt);
+    protected void afterWorldUpdate(float dt) {
         if (cameraFollow.target() instanceof CameraFollow.Target.Follow f && !f.entity().isAlive()) {
             cameraFollow.follow(mapCenter);
         }
-        cameraFollow.update(dt); // before super: world view sets the projection from the camera
-        super.update(dt);
-    }
-
-    @Override
-    public void renderWorld(SpriteBatch batch) {
-        batch.begin();
-        world.render(Time.delta);
-        if (ZenFlag.DEBUG_RENDER.on()) {
-            CollisionDraw.all(shapes, collision, Color.MAGENTA, 1f);
-        }
-        batch.end();
-    }
-
-    @Override
-    public void renderImGui() {
-        main.debugUI.render(ecsView, contactsView);
-    }
-
-    @Override
-    public void dispose() {
-        world.dispose();
-        super.dispose();
+        cameraFollow.update(dt);
     }
 }

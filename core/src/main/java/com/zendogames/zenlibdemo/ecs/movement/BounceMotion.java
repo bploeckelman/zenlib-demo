@@ -10,7 +10,7 @@ import com.zendogames.zenlib.ecs.movement.MoveWorld;
 /**
  * The demo's bouncing heroes as a game-side {@link Motion}: constant speed, reversed on whatever
  * the sweep reports as a hit. The sweep zeroes the velocity on a block, so the speed to resume
- * with is remembered here. Movers without a collider get their edge bounces from {@code EdgeBounceSystem}.
+ * with is remembered here.
  */
 public class BounceMotion implements Motion {
 

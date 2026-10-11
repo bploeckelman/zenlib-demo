@@ -7,6 +7,10 @@ import com.zendogames.zenlib.assets.ZenAnimHero;
 import com.zendogames.zenlib.ecs.*;
 import com.zendogames.zenlib.ecs.components.*;
 import com.zendogames.zenlib.ecs.movement.Motion;
+import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMotion;
+import com.zendogames.zenlib.ecs.movement.platformer.PlatformerTuning;
+
+import java.util.function.IntSupplier;
 
 /**
  * Simple enemies from <a href="https://github.com/NoelFB/tiny_link">Tiny Link</a>
@@ -79,13 +83,20 @@ public class EnemyFactory {
         var timers   = new Timers();
         var animator = new Animator(ZenAnimHero.EFFECT_ATTACK);
         animator.scale.set(0.5f, 0.5f);
+        var mover = new Mover(Motion.NONE, direction * 40f, 0f);
+        mover.onHitX = (ent, mov, dir) -> {
+            var pos = Position.get(ent);
+            pop(pos.x, pos.y);
+            world.despawn(ent);
+        };
 
         var entity = world.createEntity()
                 .tag(Tags.ENEMY)
                 .add(new Name("bullet"))
                 .add(new Position(x, y))
-                .add(new Mover(Motion.NONE, direction * 40f, 0f))
                 .add(new Lifetime(3f))
+                .add(Collider.circ(GameMask.ENEMY, 0, 0, 4).blockedBy(GameMask.SOLID))
+                .add(mover)
                 .add(animator)
                 .add(timers);
 
@@ -97,7 +108,6 @@ public class EnemyFactory {
         return entity;
     }
 
-    /** An ad-hoc component containing the hop count that the blob's timers share. */
     public static class Hops implements Component {
         public static final ComponentType<Hops> TYPE = ComponentType.register(Hops.class);
         public static Hops get(Entity e) { return TYPE.get(e); }
@@ -111,15 +121,18 @@ public class EnemyFactory {
      * (IDLE, stop). The hop timer is a one-shot that re-arms itself with a delay that
      * shortens as it gets angrier, an example of the "repeat with a varying interval" idiom.
      */
-    public Entity blob(int x, int y, int targetX) {
+    public Entity blob(int x, int y, IntSupplier targetX) {
         var timers = new Timers();
+        var tuning = PlatformerTuning.player(Factory.UNIT)
+                .withAbilities(PlatformerTuning.Abilities.NONE);
 
         var entity = world.createEntity()
                 .tag(Tags.ENEMY)
                 .add(new Name("blob"))
                 .add(new Position(x, y))
-                .add(new Mover(Motion.NONE))
-                .add(new Animator(ZenAnimHero.IDLE))
+                .add(new Mover(new PlatformerMotion(tuning)))
+                .add(Collider.rect(GameMask.ENEMY, -4, 0, 8, 16).blockedBy(GameMask.SOLID))
+                .add(new Animator(ZenAnimHero.IDLE, 8, 0))
                 .add(new Hops())
                 .add(timers);
 
@@ -130,20 +143,23 @@ public class EnemyFactory {
             var pos   = Position.get(e);
             var mover = Mover.get(e);
 
+            // Still in the air (a crate landed on it, a long fall): try again shortly, don't count it
+            var motion = mover.motion(PlatformerMotion.class);
+            if (!motion.grounded) {
+                hop.restart(0.1f);
+                return;
+            }
+
             hops.count++;
-            hops.facing = Integer.signum(targetX - pos.x);
+            hops.facing = Integer.signum(targetX.getAsInt() - pos.x);
             if (hops.facing == 0) {
                 hops.facing = 1;
             }
-            anim.facing = hops.facing;
-            anim.play(ZenAnimHero.JUMP);
-            mover.xVel = hops.facing * 40f;
-            mover.yVel = 60f;
 
-            hop.owner().after("land", 0.3f, land -> {
-                Mover.get(land.entity()).stop();
-                Animator.get(land.entity()).play(ZenAnimHero.IDLE);
-            });
+            // launch() leaves facing alone; HeroAnimSystem flips the sprite from it and plays IDLE on landing
+            motion.facing = hops.facing;
+            motion.launch(mover, hops.facing, /*dist*/ 2f, /*height*/ 1.5f, /*lock*/ 1f);
+            anim.play(ZenAnimHero.JUMP);
 
             var nextHopSecs = Math.max(0.5f, 2f - 0.25f * hops.count);
             hop.restart(nextHopSecs);
