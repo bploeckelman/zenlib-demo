@@ -18,10 +18,7 @@ import com.zendogames.zenlib.ecs.Entity;
 import com.zendogames.zenlib.ecs.World;
 import com.zendogames.zenlib.ecs.components.Animator;
 import com.zendogames.zenlib.ecs.components.Position;
-import com.zendogames.zenlib.ecs.systems.AnimationSystem;
-import com.zendogames.zenlib.ecs.systems.ContactSystem;
-import com.zendogames.zenlib.ecs.systems.LifetimeSystem;
-import com.zendogames.zenlib.ecs.systems.RenderSystem;
+import com.zendogames.zenlib.ecs.systems.*;
 import com.zendogames.zenlib.input.ScreenInputProcessor;
 import com.zendogames.zenlib.render.CameraFollow;
 import com.zendogames.zenlib.render.WorldView;
@@ -31,7 +28,6 @@ import com.zendogames.zenlib.ui.DebugViews;
 import com.zendogames.zenlibdemo.Main;
 import com.zendogames.zenlibdemo.ecs.DemoContacts;
 import com.zendogames.zenlibdemo.ecs.Factory;
-import com.zendogames.zenlibdemo.ecs.systems.MovementSystem;
 
 /**
  * Heroes bouncing around a walled 640x360 pixel-art map through through a {@link CollisionWorld}: solid walls, a
@@ -72,6 +68,7 @@ public class CollisionScreen extends ZenScreen {
     final CameraFollow cameraFollow;
     final Vector2 mapCenter;
     final DebugView ecsView;
+    final DebugView moversView;
     final DebugView contactsView;
 
     Factory.HeroShape spawnShape = Factory.HeroShape.CAPSULE;
@@ -85,10 +82,11 @@ public class CollisionScreen extends ZenScreen {
         this.contactSystem = new ContactSystem(collision, new DemoContacts());
         this.pixel = new TextureRegion(game.pixel);
         this.ecsView = DebugViews.ecs(world);
+        this.moversView = DebugViews.movers(world);
         this.contactsView = DebugViews.contacts(contactSystem);
 
         world.addSystem(new LifetimeSystem());
-        world.addSystem(new MovementSystem(MAP_WIDTH, MAP_HEIGHT, collision));
+        world.addSystem(new MovementSystem(collision));
         world.addSystem(contactSystem);
         world.addSystem(new AnimationSystem());
         world.addSystem(new RenderSystem(batch));
@@ -143,11 +141,9 @@ public class CollisionScreen extends ZenScreen {
                     case Input.Keys.X -> contactSystem.logBlockedExits = !contactSystem.logBlockedExits;
                     case Input.Keys.F -> followNearest();
                     case Input.Keys.G -> cameraFollow.follow(mapCenter);
-                    case Input.Keys.C -> {
-                        world.clear();
-                        buildLevel();
-                    }
+                    case Input.Keys.C -> { world.clear(); buildLevel(); }
                     case Input.Keys.T -> game.setScreen(new CollisionScreen(game));
+                    case Input.Keys.M -> game.setScreen(new MovementScreen(game));
                     case Input.Keys.N -> game.setScreen(new TimerScreen(game));
                     case Input.Keys.B -> game.setScreen(new FirstScreen(game));
                     default -> { return false; }

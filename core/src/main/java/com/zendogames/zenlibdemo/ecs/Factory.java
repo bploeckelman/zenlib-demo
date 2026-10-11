@@ -11,13 +11,22 @@ import com.zendogames.zenlib.ecs.Entity;
 import com.zendogames.zenlib.ecs.Family;
 import com.zendogames.zenlib.ecs.World;
 import com.zendogames.zenlib.ecs.components.*;
+import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMode;
+import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMotion;
+import com.zendogames.zenlib.ecs.movement.platformer.PlatformerTuning;
+import com.zendogames.zenlib.ecs.movement.topdown.TopDownMotion;
+import com.zendogames.zenlib.ecs.movement.topdown.TopDownTuning;
+import com.zendogames.zenlib.input.InputControls;
 import com.zendogames.zenlib.render.RenderLayer;
-import com.zendogames.zenlibdemo.ecs.components.Velocity;
+import com.zendogames.zenlibdemo.ecs.movement.BounceMotion;
 
 /** Spawns the demo's entities. Logs family joins so the per-add timing in setup code is visible. */
 public class Factory {
 
     private static final String TAG = Factory.class.getSimpleName();
+
+    /** The demo's tile size: the unit every tuning is authored in. */
+    public static final int UNIT = 16;
 
     /** Hero frames are 16x16 with the origin at the bottom-left; the body is the middle 8px. */
     public enum HeroShape { CAPSULE, RECT }
@@ -28,9 +37,9 @@ public class Factory {
         this.world = world;
 
         // Outside a system each add() refreshes membership at once, so this fires on the
-        // second of Position/Velocity, mid-construction. Inside a system (SpawnSystem)
+        // second of Position/Mover, mid-construction. Inside a system (SpawnSystem)
         // it fires once, after the system returns, with the entity complete.
-        var movers = world.family(Family.all(Position.TYPE, Velocity.TYPE));
+        var movers = world.family(Family.all(Position.TYPE, Mover.TYPE));
         movers.onAdd(e -> Log.debug(TAG, "%s joined movers (animator=%b, updating=%b)", e, Animator.has(e), world.isUpdating()));
         movers.onRemove(e -> Log.debug(TAG, "%s left movers (alive=%b)", e, e.isAlive()));
     }
@@ -44,8 +53,8 @@ public class Factory {
         var entity = world.createEntity()
                 .add(pos)
                 .add(new Name("hero"))
-                .add(new Velocity(velX, velY))
-                .add(new Animator(ZenAnimHero.RUN))
+                .add(new Mover(new BounceMotion(velX, velY), velX, velY))
+                .add(new Animator(ZenAnimHero.RUN, 8, 0))
                 .add(new Lifetime(MathUtils.random(5f, 15f)));
         Log.debug(TAG, "spawned %s at (%d, %d)", entity, x, y);
         return entity;
@@ -56,14 +65,66 @@ public class Factory {
         var hero = hero(x, y);
         hero.remove(Lifetime.TYPE);
         var collider = switch (shape) {
-            case CAPSULE -> Collider.capsule(GameMask.PLAYER, 4, 0, 8, 16);
-            case RECT    -> Collider.rect(GameMask.PLAYER, 4, 0, 8, 16);
+            case CAPSULE -> Collider.capsule(GameMask.PLAYER, -4, 0, 8, 16);
+            case RECT    -> Collider.rect(GameMask.PLAYER, -4, 0, 8, 16);
         };
         hero.add(collider
                 .blockedBy(GameMask.SOLID, GameMask.PLAYER)
                 .detects(GameMask.TRIGGER, GameMask.PLAYER));
         hero.add(new Contacts());
         return hero;
+    }
+
+    // ------------------------------------------------------------------------
+    // Movers for MovementScreen
+    // ------------------------------------------------------------------------
+
+    /** A keyboard-driven platformer hero: {@code controls} steer it, the action key jumps, a double tap dashes. */
+    public Entity platformerHero(int x, int y, InputControls controls, PlatformerTuning tuning) {
+        var entity = world.createEntity()
+                .add(new Name("hero"))
+                .add(new Position(x, y))
+                .add(new Input(controls))
+                .add(new Mover(new PlatformerMotion(tuning)))
+                .add(new Animator(ZenAnimHero.IDLE, 8, 0))
+                .add(new Contacts())
+                .add(Collider.rect(GameMask.PLAYER, -4, 0, 8, 16).blockedBy(GameMask.SOLID));
+        Log.debug(TAG, "spawned platformer %s at (%d, %d)", entity, x, y);
+        return entity;
+    }
+
+    /** A keyboard-driven top-down walker: 8-way, no gravity, an 8x8 foot box. */
+    public Entity walker(int x, int y, InputControls controls) {
+        var animator = new Animator(ZenAnimHero.IDLE, 8, 0);
+        animator.tint.set(Color.SKY);
+
+        var entity = world.createEntity()
+                .add(new Name("walker"))
+                .add(new Position(x, y))
+                .add(new Input(controls))
+                .add(new Mover(new TopDownMotion(TopDownTuning.walker(UNIT))))
+                .add(new Contacts())
+                .add(animator)
+                .add(Collider.rect(GameMask.PLAYER, -4, 0, 8, 16).blockedBy(GameMask.SOLID));
+
+        Log.debug(TAG, "spawned walker %s at (%d, %d)", entity, x, y);
+        return entity;
+    }
+
+    /** A 12x12 crate that falls under the hero's gravity, rests on anything SOLID and is SOLID itself, so heroes stand on it and crates stack. */
+    public Entity crate(TextureRegion pixel, int x, int y) {
+        var image = new Image(pixel, 12, 12);
+        image.tint.set(Color.BROWN);
+
+        var entity = world.createEntity()
+                .add(new Name("crate"))
+                .add(new Position(x, y))
+                .add(image)
+                .add(new Mover(new PlatformerMotion(PlatformerTuning.ballistic(UNIT), PlatformerMode.BALLISTIC)))
+                .add(Collider.rect(GameMask.SOLID, 0, 0, 12, 12).blockedBy(GameMask.SOLID));
+
+        Log.debug(TAG, "spawned %s at (%d, %d)", entity, x, y);
+        return entity;
     }
 
     /** A tinted {@code Image} filling the map behind everything, to show {@code RenderLayer} sorting. */
@@ -80,7 +141,7 @@ public class Factory {
     }
 
     // ------------------------------------------------------------------------
-    // Level pieces for CollisionScreen
+    // Level pieces for CollisionScreen and MovementScreen
     // ------------------------------------------------------------------------
 
     public Entity wall(TextureRegion pixel, String name, int x, int y, int w, int h) {

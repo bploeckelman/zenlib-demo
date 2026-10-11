@@ -9,10 +9,7 @@ import com.zendogames.zenlib.Time;
 import com.zendogames.zenlib.ZenFlag;
 import com.zendogames.zenlib.ZenGame;
 import com.zendogames.zenlib.ecs.World;
-import com.zendogames.zenlib.ecs.systems.AnimationSystem;
-import com.zendogames.zenlib.ecs.systems.LifetimeSystem;
-import com.zendogames.zenlib.ecs.systems.RenderSystem;
-import com.zendogames.zenlib.ecs.systems.TimerSystem;
+import com.zendogames.zenlib.ecs.systems.*;
 import com.zendogames.zenlib.input.ScreenInputProcessor;
 import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.screens.ZenScreen;
@@ -22,7 +19,7 @@ import com.zendogames.zenlib.ui.DebugViews;
 import com.zendogames.zenlibdemo.Main;
 import com.zendogames.zenlibdemo.ecs.EnemyFactory;
 import com.zendogames.zenlibdemo.ecs.Factory;
-import com.zendogames.zenlibdemo.ecs.systems.MovementSystem;
+import com.zendogames.zenlibdemo.ecs.systems.EdgeBounceSystem;
 
 /**
  * Simple enemies built from {@code Timers} lambdas on a map the size of the view. The controls are
@@ -56,7 +53,8 @@ public class TimerScreen extends ZenScreen {
 
         world.addSystem(new TimerSystem());
         world.addSystem(new LifetimeSystem());
-        world.addSystem(new MovementSystem(VIEW_WIDTH, VIEW_HEIGHT));
+        world.addSystem(new MovementSystem());
+        world.addSystem(new EdgeBounceSystem(VIEW_WIDTH, VIEW_HEIGHT));
         world.addSystem(new AnimationSystem());
         world.addSystem(new RenderSystem(batch));
 
@@ -69,9 +67,9 @@ public class TimerScreen extends ZenScreen {
         this.timersView = DebugViews.timers(world);
         this.actions = new DebugActions()
                 .defaultClick(enemies::spitter)
-                .arm("spitter", Input.Keys.S, enemies::spitter)
-                .arm("blob",    Input.Keys.O, (x, y) -> enemies.blob(x, y, VIEW_WIDTH / 2))
-                .arm("door",    Input.Keys.D, enemies::door)
+                .arm("spitter",       Input.Keys.S, enemies::spitter)
+                .arm("blob",          Input.Keys.O, (x, y) -> enemies.blob(x, y, VIEW_WIDTH / 2))
+                .arm("door",          Input.Keys.D, enemies::door)
                 .add("kill enemies",  Input.Keys.K, () -> Log.info(TAG, "killed %d enemies", enemies.killEnemies()))
                 .add("hit-stop 0.5s", Input.Keys.P, () -> Time.pauseFor(0.5f))
                 .add("LOG_TIMERS",    Input.Keys.L, ZenFlag.LOG_TIMERS::toggle)
@@ -80,7 +78,8 @@ public class TimerScreen extends ZenScreen {
                     factory.backdrop(pixel, VIEW_WIDTH, VIEW_HEIGHT);
                 })
                 .add("fresh TimerScreen", Input.Keys.T, () -> game.setScreen(new TimerScreen(game)))
-                .add("EcsScreen",         Input.Keys.B, () -> game.setScreen(new EcsScreen(game)));
+                .add("EcsScreen",         Input.Keys.B, () -> game.setScreen(new EcsScreen(game)))
+                .add("MovementScreen",    Input.Keys.M, () -> game.setScreen(new MovementScreen(game)));
     }
 
     @Override

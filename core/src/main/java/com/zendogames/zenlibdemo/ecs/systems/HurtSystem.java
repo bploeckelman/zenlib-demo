@@ -7,8 +7,8 @@ import com.zendogames.zenlib.ecs.IteratingSystem;
 import com.zendogames.zenlib.ecs.SystemOrder;
 import com.zendogames.zenlib.ecs.components.Animator;
 import com.zendogames.zenlib.ecs.components.Lifetime;
+import com.zendogames.zenlib.ecs.components.Mover;
 import com.zendogames.zenlibdemo.ecs.Tags;
-import com.zendogames.zenlibdemo.ecs.components.Velocity;
 
 /**
  * A freshly hurt entity stops, plays the hurt animation and gets a short lifetime.
@@ -27,7 +27,7 @@ public class HurtSystem extends IteratingSystem {
         if (animator.isNot(ZenAnimHero.HURT)) {
             animator.play(ZenAnimHero.HURT);
             animator.scale.set(1.4f, 0.6f);
-            e.remove(Velocity.TYPE);
+            e.remove(Mover.TYPE);
             // NOTE: represents duration for 'hurt' anim and tag, not hero's ephemeral lifetime
             e.add(new Lifetime(1f)); // replaces any existing lifetime
         }

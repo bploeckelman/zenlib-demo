@@ -18,6 +18,7 @@ import com.zendogames.zenlib.ecs.components.Name;
 import com.zendogames.zenlib.ecs.components.Position;
 import com.zendogames.zenlib.ecs.systems.AnimationSystem;
 import com.zendogames.zenlib.ecs.systems.LifetimeSystem;
+import com.zendogames.zenlib.ecs.systems.MovementSystem;
 import com.zendogames.zenlib.ecs.systems.RenderSystem;
 import com.zendogames.zenlib.input.ScreenInputProcessor;
 import com.zendogames.zenlib.render.CameraFollow;
@@ -28,8 +29,8 @@ import com.zendogames.zenlib.ui.DebugViews;
 import com.zendogames.zenlibdemo.Main;
 import com.zendogames.zenlibdemo.ecs.Factory;
 import com.zendogames.zenlibdemo.ecs.Tags;
+import com.zendogames.zenlibdemo.ecs.systems.EdgeBounceSystem;
 import com.zendogames.zenlibdemo.ecs.systems.HurtSystem;
-import com.zendogames.zenlibdemo.ecs.systems.MovementSystem;
 import com.zendogames.zenlibdemo.ecs.systems.SpawnSystem;
 
 /**
@@ -79,7 +80,8 @@ public class EcsScreen extends ZenScreen {
         world.addSystem(new SpawnSystem(factory, TARGET_HEROES, MAP_WIDTH, MAP_HEIGHT));
         world.addSystem(new HurtSystem());
         world.addSystem(new LifetimeSystem());
-        world.addSystem(new MovementSystem(MAP_WIDTH, MAP_HEIGHT));
+        world.addSystem(new MovementSystem());
+        world.addSystem(new EdgeBounceSystem(MAP_WIDTH, MAP_HEIGHT));
         world.addSystem(new AnimationSystem());
         world.addSystem(new RenderSystem(batch));
 

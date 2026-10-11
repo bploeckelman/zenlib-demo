@@ -6,16 +6,16 @@ import com.zendogames.zenlib.Log;
 import com.zendogames.zenlib.assets.ZenAnimHero;
 import com.zendogames.zenlib.ecs.*;
 import com.zendogames.zenlib.ecs.components.*;
-import com.zendogames.zenlibdemo.ecs.components.Velocity;
+import com.zendogames.zenlib.ecs.movement.Motion;
 
 /**
  * Simple enemies from <a href="https://github.com/NoelFB/tiny_link">Tiny Link</a>
  * rebuilt from library components and {@link Timers} lambdas, one per method,
  * with hero art standing in for sprites. Nothing here has a component class or
- * a system of its own; what each one needs that a closure can';t hold (eg. the
- * blob's hop count) is a component. Movement is the demo's {@link Velocity} until
- * the library's movement slice lands, so there is no gravity or ground: the blob
- * "hops" by moving for a moment and stopping.
+ * a system of its own; what each one needs that a closure can't hold (eg. the
+ * blob's hop count) is a component. Movement is a {@link Mover} with
+ * {@link Motion#NONE}: the timers write the velocity, the sweep integrates it.
+ * The screen has no gravity or ground, so the blob "hops" by moving for a moment and stopping.
  */
 public class EnemyFactory {
 
@@ -84,7 +84,7 @@ public class EnemyFactory {
                 .tag(Tags.ENEMY)
                 .add(new Name("bullet"))
                 .add(new Position(x, y))
-                .add(new Velocity(direction * 40f, 0f))
+                .add(new Mover(Motion.NONE, direction * 40f, 0f))
                 .add(new Lifetime(3f))
                 .add(animator)
                 .add(timers);
@@ -118,17 +118,17 @@ public class EnemyFactory {
                 .tag(Tags.ENEMY)
                 .add(new Name("blob"))
                 .add(new Position(x, y))
-                .add(new Velocity(0f, 0f))
+                .add(new Mover(Motion.NONE))
                 .add(new Animator(ZenAnimHero.IDLE))
                 .add(new Hops())
                 .add(timers);
 
         timers.after("hop", 2f, hop -> {
             var e = hop.entity();
-            var hops = Hops.get(e);
-            var anim = Animator.get(e);
-            var pos  = Position.get(e);
-            var vel  = Velocity.get(e);
+            var hops  = Hops.get(e);
+            var anim  = Animator.get(e);
+            var pos   = Position.get(e);
+            var mover = Mover.get(e);
 
             hops.count++;
             hops.facing = Integer.signum(targetX - pos.x);
@@ -137,15 +137,12 @@ public class EnemyFactory {
             }
             anim.facing = hops.facing;
             anim.play(ZenAnimHero.JUMP);
-            vel.dx = hops.facing * 40f;
-            vel.dy = 60f;
+            mover.xVel = hops.facing * 40f;
+            mover.yVel = 60f;
 
             hop.owner().after("land", 0.3f, land -> {
-                var v = Velocity.get(land.entity());
-                v.dx = 0f;
-                v.dy = 0f;
-                var a = Animator.get(land.entity());
-                a.play(ZenAnimHero.IDLE);
+                Mover.get(land.entity()).stop();
+                Animator.get(land.entity()).play(ZenAnimHero.IDLE);
             });
 
             var nextHopSecs = Math.max(0.5f, 2f - 0.25f * hops.count);
