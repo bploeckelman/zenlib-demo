@@ -18,6 +18,7 @@ import com.zendogames.zenlib.ecs.movement.topdown.TopDownMotion;
 import com.zendogames.zenlib.ecs.movement.topdown.TopDownTuning;
 import com.zendogames.zenlib.input.InputControls;
 import com.zendogames.zenlib.render.RenderLayer;
+import com.zendogames.zenlibdemo.ecs.components.Health;
 import com.zendogames.zenlibdemo.ecs.movement.BounceMotion;
 
 /** Spawns the demo's entities. Logs family joins so the per-add timing in setup code is visible. */
@@ -53,6 +54,7 @@ public class Factory {
         var entity = world.createEntity()
                 .add(pos)
                 .add(new Name("hero"))
+                .add(new Health(3))
                 .add(new Mover(new BounceMotion(velX, velY), velX, velY))
                 .add(new Animator(ZenAnimHero.RUN, 8, 0))
                 .add(new Lifetime(MathUtils.random(5f, 15f)));
@@ -85,10 +87,14 @@ public class Factory {
                 .add(new Name("hero"))
                 .add(new Position(x, y))
                 .add(new Input(controls))
-                .add(new Mover(new PlatformerMotion(tuning)))
-                .add(new Animator(ZenAnimHero.IDLE, 8, 0))
+                .add(new Health(3))
                 .add(new Contacts())
-                .add(Collider.rect(GameMask.PLAYER, -4, 0, 8, 16).blockedBy(GameMask.SOLID));
+                .add(new Animator(ZenAnimHero.IDLE, 8, 0))
+                .add(new Mover(new PlatformerMotion(tuning)))
+                .add(new Behavior(HeroState.NORMAL))
+                .add(Collider.rect(GameMask.PLAYER, -4, 0, 8, 16)
+                        .blockedBy(GameMask.SOLID)
+                        .detects(GameMask.ENEMY));
         Log.debug(TAG, "spawned platformer %s at (%d, %d)", entity, x, y);
         return entity;
     }
@@ -102,6 +108,7 @@ public class Factory {
                 .add(new Name("walker"))
                 .add(new Position(x, y))
                 .add(new Input(controls))
+                .add(new Behavior(HeroState.NORMAL))
                 .add(new Mover(new TopDownMotion(TopDownTuning.walker(UNIT))))
                 .add(new Contacts())
                 .add(animator)

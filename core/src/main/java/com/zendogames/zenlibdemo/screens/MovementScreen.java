@@ -4,24 +4,23 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.zendogames.zenlib.Log;
 import com.zendogames.zenlib.Time;
+import com.zendogames.zenlib.ZenFlag;
 import com.zendogames.zenlib.ZenGame;
 import com.zendogames.zenlib.ecs.Entity;
+import com.zendogames.zenlib.ecs.components.Behavior;
 import com.zendogames.zenlib.ecs.components.Mover;
 import com.zendogames.zenlib.ecs.components.Name;
 import com.zendogames.zenlib.ecs.components.Position;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMotion;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerTuning;
-import com.zendogames.zenlib.ecs.systems.ContactSystem;
-import com.zendogames.zenlib.ecs.systems.InputSystem;
-import com.zendogames.zenlib.ecs.systems.MovementSystem;
-import com.zendogames.zenlib.ecs.systems.TimerSystem;
+import com.zendogames.zenlib.ecs.systems.*;
 import com.zendogames.zenlib.input.InputControls;
 import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.ui.DebugViews;
 import com.zendogames.zenlibdemo.ecs.DemoContacts;
 import com.zendogames.zenlibdemo.ecs.EnemyFactory;
+import com.zendogames.zenlibdemo.ecs.HeroState;
 import com.zendogames.zenlibdemo.ecs.Level;
-import com.zendogames.zenlibdemo.ecs.systems.HeroAnimSystem;
 
 /**
  * The movement slice on one 640x360 map: a platformer hero on WASD + Space (double tap to dash),
@@ -35,6 +34,8 @@ import com.zendogames.zenlibdemo.ecs.systems.HeroAnimSystem;
  *   pillar       tall and thin: wall slide (push into it while falling), wall jump (jump while on it),
  *                ledge grab (push into it near the top while falling; down lets go, jump climbs)
  *   pen          the walker's area, no gravity: 8-way, diagonals the same speed, 4-way facing
+ *   blob         hops after the hero; touching it knocks the hero back with the HURT animation and
+ *                i-frames for its length ({@code HeroState}); hurt / kill / revive drive the machine
  * </pre>
  * Everything else is a {@code DebugActions} button in the Debug window, keys in parentheses there:
  * crate at the pointer (also the unarmed click), a blob that hops toward the hero, a second
@@ -67,9 +68,9 @@ public class MovementScreen extends DemoScreen {
 
         world.addSystem(new InputSystem(inputProcessor));
         world.addSystem(new TimerSystem());
+        world.addSystem(new BehaviorSystem());
         world.addSystem(new MovementSystem(collision));
         world.addSystem(contactSystem);
-        world.addSystem(new HeroAnimSystem());
         addCommonSystems();
 
         worldCamera.position.set(MAP_WIDTH / 2f, MAP_HEIGHT / 2f, 0f);
@@ -77,14 +78,19 @@ public class MovementScreen extends DemoScreen {
 
         debugViews.add(DebugViews.movers(world));
         debugViews.add(DebugViews.contacts(contactSystem));
+        debugViews.add(DebugViews.behaviors(world));
         actions.defaultClick(this::crate)
-               .arm("crate",                 Input.Keys.C, this::crate)
-               .arm("blob",                  Input.Keys.O, (x, y) -> enemies.blob(x, y, this::heroX))
-               .arm("hero 2 (arrows+enter)", Input.Keys.H, (x, y) -> factory.platformerHero(x, y, HERO_2, PlatformerTuning.player(UNIT)))
-               .add("toggle 8-tile jump",    Input.Keys.T, this::toggleTuning)
-               .add("launch hero",           Input.Keys.L, this::launchHero)
-               .add("hit-stop 0.5s",         Input.Keys.P, () -> Time.pauseFor(0.5f))
-               .add("rebuild level",         Input.Keys.R, () -> { world.clear(); buildLevel(); });
+                .arm("crate",                 Input.Keys.C, this::crate)
+                .arm("blob",                  Input.Keys.O, (x, y) -> enemies.blob(x, y, this::heroX))
+                .arm("hero 2 (arrows+enter)", Input.Keys.H, (x, y) -> factory.platformerHero(x, y, HERO_2, PlatformerTuning.player(UNIT)))
+                .add("toggle 8-tile jump",    Input.Keys.T, this::toggleTuning)
+                .add("launch hero",           Input.Keys.L, this::launchHero)
+                .add("hurt hero",             Input.Keys.U, () -> requestHero(HeroState.HURT))
+                .add("kill hero",             Input.Keys.K, () -> requestHero(HeroState.DEAD))
+                .add("revive hero",           Input.Keys.V, this::reviveHero)
+                .add("LOG_STATE",             Input.Keys.G, ZenFlag.LOG_STATE::toggle)
+                .add("hit-stop 0.5s",         Input.Keys.P, () -> Time.pauseFor(0.5f))
+                .add("rebuild level",         Input.Keys.R, () -> { world.clear(); buildLevel(); });
     }
 
     private void buildLevel() {
@@ -134,6 +140,19 @@ public class MovementScreen extends DemoScreen {
         var motion = mover.motion(PlatformerMotion.class);
         motion.launch(mover, motion.facing, /*dist*/ 6, /*height*/ 4, /*lock*/ 0.5f);
         Log.info(TAG, "%s launched %+d", Name.of(hero), motion.facing);
+    }
+
+    /** Asks the hero's state machine for {@code state} on its next tick; HURT and DEAD refuse what they refuse (LOG_STATE shows refusals). */
+    private void requestHero(HeroState state) {
+        if (!hero.isAlive()) return;
+        Behavior.get(hero).request(state);
+        Log.info(TAG, "%s requested %s (now %s)", Name.of(hero), state, Behavior.get(hero).current());
+    }
+
+    /** Change to NORMAL state again from anything, immediately: the setup/respawn paths. */
+    private void reviveHero() {
+        if (!hero.isAlive()) return;
+        HeroState.revive(hero, HERO_1);
     }
 
     @Override

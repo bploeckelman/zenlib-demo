@@ -6,6 +6,7 @@ import com.zendogames.zenlib.Log;
 import com.zendogames.zenlib.Time;
 import com.zendogames.zenlib.ZenFlag;
 import com.zendogames.zenlib.ZenGame;
+import com.zendogames.zenlib.ecs.systems.BehaviorSystem;
 import com.zendogames.zenlib.ecs.systems.LifetimeSystem;
 import com.zendogames.zenlib.ecs.systems.MovementSystem;
 import com.zendogames.zenlib.ecs.systems.TimerSystem;
@@ -13,7 +14,6 @@ import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.ui.DebugViews;
 import com.zendogames.zenlibdemo.ecs.EnemyFactory;
 import com.zendogames.zenlibdemo.ecs.Level;
-import com.zendogames.zenlibdemo.ecs.systems.HeroAnimSystem;
 
 /**
  * Simple enemies built from {@code Timers} lambdas on a walled map the size of the view, under
@@ -38,9 +38,9 @@ public class EnemyScreen extends DemoScreen {
         this.enemies = new EnemyFactory(world);
 
         world.addSystem(new TimerSystem());
+        world.addSystem(new BehaviorSystem());
         world.addSystem(new LifetimeSystem());
         world.addSystem(new MovementSystem(collision));
-        world.addSystem(new HeroAnimSystem());
         addCommonSystems();
 
         worldCamera.position.set(VIEW_WIDTH / 2f, VIEW_HEIGHT / 2f, 0f);
