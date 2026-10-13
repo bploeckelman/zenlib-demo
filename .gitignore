@@ -1,5 +1,6 @@
 ## Project:
 assets/imgui.ini
+assets/maps/*.tiled-session
 
 ## Gradle:
 .gradle/

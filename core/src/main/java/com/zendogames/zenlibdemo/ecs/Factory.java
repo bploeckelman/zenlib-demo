@@ -93,8 +93,8 @@ public class Factory {
                 .add(new Mover(new PlatformerMotion(tuning)))
                 .add(new Behavior(HeroState.NORMAL))
                 .add(Collider.rect(GameMask.PLAYER, -4, 0, 8, 16)
-                        .blockedBy(GameMask.SOLID)
-                        .detects(GameMask.ENEMY));
+                        .blockedBy(GameMask.SOLID, GameMask.PLAYER)
+                        .detects(GameMask.TRIGGER, GameMask.ENEMY));
         Log.debug(TAG, "spawned platformer %s at (%d, %d)", entity, x, y);
         return entity;
     }

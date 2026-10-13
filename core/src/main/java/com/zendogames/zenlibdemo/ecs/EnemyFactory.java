@@ -7,8 +7,10 @@ import com.zendogames.zenlib.assets.ZenAnimHero;
 import com.zendogames.zenlib.ecs.*;
 import com.zendogames.zenlib.ecs.components.*;
 import com.zendogames.zenlib.ecs.movement.Motion;
+import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMode;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMotion;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerTuning;
+import com.zendogames.zenlib.render.RenderLayer;
 
 import java.util.function.IntSupplier;
 
@@ -106,6 +108,60 @@ public class EnemyFactory {
                     tint.a = (tint.a < 1f) ? 1f : 0.2f;
                 }));
         return entity;
+    }
+
+    /**
+     * Every {@code period} seconds throws a {@link #projectile} at {@code (xVel, yVel)}; the map's
+     * {@code launcher} class. A timer and no component, like the spitter.
+     */
+    public Entity launcher(int x, int y, float period, float xVel, float yVel) {
+        var timers = new Timers();
+        var anim = new Animator(ZenAnimHero.IDLE);
+        anim.tint.set(Color.CORAL);
+
+        var entity = world.createEntity()
+                .tag(Tags.ENEMY)
+                .add(new Name("launcher"))
+                .add(new Position(x, y))
+                .add(anim)
+                .add(timers);
+
+        timers.every("throw", period, _throw -> {
+            var pos = Position.get(_throw.entity());
+            projectile(pos.x + 8, pos.y + 8, xVel, yVel);
+        });
+
+        return entity;
+    }
+
+    /**
+     * A thrown thing under the crate's gravity: flies an arc from its velocity, pops on any wall or
+     * floor, hurts a hero it touches (the hero detects {@code ENEMY}), and despawns after 5s regardless.
+     */
+    public Entity projectile(int x, int y, float xVel, float yVel) {
+        var animator = new Animator(ZenAnimHero.EFFECT_ATTACK);
+        animator.scale.set(0.5f, 0.5f);
+        animator.layer = RenderLayer.FOREGROUND;
+
+        var tuning = PlatformerTuning.ballistic(Factory.UNIT);
+        var motion = new PlatformerMotion(tuning, PlatformerMode.BALLISTIC);
+        var mover = new Mover(motion, xVel, yVel);
+        var onHitPop = (Mover.HitCallback) (ent, mov, dir) -> {
+            var pos = Position.get(ent);
+            pop(pos.x, pos.y);
+            world.despawn(ent);
+        };
+        mover.onHitX = onHitPop;
+        mover.onHitY = onHitPop;
+
+        return world.createEntity()
+                .tag(Tags.ENEMY)
+                .add(new Name("projectile"))
+                .add(new Position(x, y))
+                .add(new Lifetime(5f))
+                .add(Collider.circ(GameMask.ENEMY, 0, 0, 4).blockedBy(GameMask.SOLID))
+                .add(mover)
+                .add(animator);
     }
 
     public static class Hops implements Component {

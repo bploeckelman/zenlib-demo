@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="60" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="22">
+ <tileset firstgid="1" source="tilesets/warp-room.tsx"/>
+ <tileset firstgid="111" source="tilesets/meta.tsx"/>
+ <tileset firstgid="221" source="backgrounds/bg_00_warp_room.tsx"/>
+ <tileset firstgid="222" source="tilesets/dungeon.tsx"/>
+ <objectgroup id="7" name="background-objects">
+  <object id="11" name="background" gid="221" x="16" y="464" width="928" height="448"/>
+ </objectgroup>
+ <layer id="3" name="background" width="60" height="30">
+  <properties>
+   <property name="layer" value="background"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztz7ENgDAMRNHQAKIBRAOIkSiz/yzcAAnhChQk/pPcxJZzDgEAAAAAAAAAAHzJ0LwzW0urjJ2qz2RdjBuc2ZQz8VbK5xq1Z1LNFe+NN71SPteqPZtqz+w7jH+c2adK+f7oArCBAnM=
+  </data>
+ </layer>
+ <layer id="1" name="middle" width="60" height="30">
+  <properties>
+   <property name="layer" value="world"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztkb0JgGAMBTOAf5WilYWVgvtP9M3hExxA0Cgc7+C6QHKkiohaNnBb2cleDsFnlJOcf77jS5ZwLxn3snEvG/eycS8b97JxLxv3snEvG/eyce8zStLsW/i/bNzL5uxd5ZZouczccdddHlDjGC0=
+  </data>
+ </layer>
+ <objectgroup id="4" name="objects">
+  <object id="6" name="player-1" type="player" gid="121" x="392" y="352" width="16" height="16"/>
+  <object id="8" name="launcher" type="launcher" gid="131" x="304" y="384" width="16" height="16">
+   <properties>
+    <property name="period" type="float" value="0.5"/>
+    <property name="xVel" type="int" value="-200"/>
+    <property name="yVel" type="int" value="500"/>
+   </properties>
+  </object>
+  <object id="9" name="launcher" type="launcher" gid="131" x="480" y="384" width="16" height="16">
+   <properties>
+    <property name="period" type="float" value="0.5"/>
+    <property name="xVel" type="int" value="200"/>
+    <property name="yVel" type="int" value="500"/>
+   </properties>
+  </object>
+  <object id="10" name="jumpthru" x="320" y="384">
+   <polyline points="0,0 160,0"/>
+  </object>
+  <object id="13" name="logger-left" type="trigger" gid="112" x="310" y="464" width="4" height="64" opacity="0.5"/>
+  <object id="16" name="logger-right" type="trigger" gid="112" x="486" y="464" width="4" height="64" opacity="0.5"/>
+  <object id="17" name="bouncer" type="trigger" gid="113" x="392" y="464" width="16" height="2" opacity="0.5">
+   <properties>
+    <property name="activation" propertytype="trigger_activation" value="center"/>
+    <property name="effect" propertytype="trigger_vals" value="bounce"/>
+    <property name="height" type="float" value="5"/>
+   </properties>
+  </object>
+  <object id="18" name="teleport-left" type="trigger" gid="114" x="184" y="456" width="32" height="20" opacity="0.5">
+   <properties>
+    <property name="activation" propertytype="trigger_activation" value="center"/>
+    <property name="dwell" type="float" value="0.3"/>
+    <property name="effect" propertytype="trigger_vals" value="teleport"/>
+    <property name="target" type="object" value="21"/>
+   </properties>
+  </object>
+  <object id="19" name="teleport-right" type="trigger" gid="114" x="824" y="456" width="32" height="20" opacity="0.5">
+   <properties>
+    <property name="activation" propertytype="trigger_activation" value="center"/>
+    <property name="dwell" type="float" value="0.3"/>
+    <property name="effect" propertytype="trigger_vals" value="teleport"/>
+    <property name="target" type="object" value="21"/>
+   </properties>
+  </object>
+  <object id="20" name="player-2" type="player" gid="121" x="624" y="448" width="16" height="16">
+   <properties>
+    <property name="number" propertytype="player_vals" value="2"/>
+   </properties>
+  </object>
+  <object id="21" name="teleport-target" type="marker" x="400" y="316">
+   <point/>
+  </object>
+ </objectgroup>
+ <layer id="5" name="collision" width="60" height="30">
+  <properties>
+   <property name="collision" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt2bEJADAMxMDf2Pt3mcEQeJB14DYgu8wkmWNzhb1s9rLZy2Yvm71s9rLZy2Yvm71s9rLZy/a7d/NWY8/el81etva/VWMepK5NLw==
+  </data>
+ </layer>
+ <layer id="2" name="foreground" width="60" height="30">
+  <properties>
+   <property name="layer" value="foreground"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztzikOgDAABVF6OzbFptjub7BIxjfBtEkr5iVjf37TSJIkSZIkSZJUv5dC+O8pfVKRljrqaaCx7J1I7n8TzbTQSlviXm65/+100EkX3Yl7udX+r5QPcnwL0A==
+  </data>
+ </layer>
+</map>

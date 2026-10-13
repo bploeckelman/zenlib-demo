@@ -1,0 +1,172 @@
+{
+    "automappingRulesFile": "",
+    "commands": [
+    ],
+    "compatibilityVersion": 1100,
+    "extensionsPath": "extensions",
+    "folders": [
+        "."
+    ],
+    "properties": [
+        {
+            "name": "launcher",
+            "propertytype": "launcher",
+            "type": "class",
+            "value": {
+            }
+        },
+        {
+            "name": "player",
+            "propertytype": "player",
+            "type": "class",
+            "value": {
+            }
+        }
+    ],
+    "propertyTypes": [
+        {
+            "color": "#ff00aaff",
+            "drawFill": true,
+            "id": 2,
+            "members": [
+                {
+                    "name": "period",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "xVel",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "yVel",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "launcher",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffaaff00",
+            "drawFill": true,
+            "id": 7,
+            "members": [
+                {
+                    "name": "unused",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "marker",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "project"
+            ]
+        },
+        {
+            "color": "#ff00ff00",
+            "drawFill": true,
+            "id": 1,
+            "members": [
+                {
+                    "name": "number",
+                    "propertyType": "player_vals",
+                    "type": "string",
+                    "value": "1"
+                }
+            ],
+            "name": "player",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "project"
+            ]
+        },
+        {
+            "id": 5,
+            "name": "player_vals",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "1",
+                "2"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "color": "#ffff5500",
+            "drawFill": true,
+            "id": 3,
+            "members": [
+                {
+                    "name": "activation",
+                    "propertyType": "trigger_activation",
+                    "type": "string",
+                    "value": "touch"
+                },
+                {
+                    "name": "dwell",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "effect",
+                    "propertyType": "trigger_vals",
+                    "type": "string",
+                    "value": "log"
+                },
+                {
+                    "name": "height",
+                    "type": "float",
+                    "value": 3
+                },
+                {
+                    "name": "target",
+                    "type": "object",
+                    "value": 0
+                }
+            ],
+            "name": "trigger",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "project"
+            ]
+        },
+        {
+            "id": 4,
+            "name": "trigger_vals",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "log",
+                "bounce",
+                "teleport"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "id": 6,
+            "name": "trigger_activation",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "touch",
+                "center",
+                "inside"
+            ],
+            "valuesAsFlags": false
+        }
+    ]
+}
