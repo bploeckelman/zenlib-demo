@@ -2,10 +2,7 @@ package com.zendogames.zenlibdemo.ecs;
 
 import com.zendogames.zenlib.assets.ZenAnimHero;
 import com.zendogames.zenlib.ecs.Entity;
-import com.zendogames.zenlib.ecs.components.Animator;
-import com.zendogames.zenlib.ecs.components.Behavior;
-import com.zendogames.zenlib.ecs.components.Input;
-import com.zendogames.zenlib.ecs.components.Mover;
+import com.zendogames.zenlib.ecs.components.*;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMode;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMotion;
 import com.zendogames.zenlib.ecs.movement.topdown.TopDownMotion;
@@ -34,8 +31,14 @@ public enum HeroState implements State<Entity> {
         public State<Entity> update(StateMachine<Entity> m, Entity e, float dt) {
             var anim  = Animator.get(e);
             var mover = Mover.get(e);
-            if      (mover.motion instanceof PlatformerMotion p) platformer(anim, mover, p);
-            else if (mover.motion instanceof TopDownMotion t)    topDown(anim, mover, t);
+            if (mover.motion instanceof PlatformerMotion p) {
+                platformer(anim, mover, p);
+                if (Sensor.has(e)) {
+                    Sensor.get(e).facing = p.facing; // the whiskers face the sprite's way from the next tick's SENSE on
+                }
+            } else if (mover.motion instanceof TopDownMotion t) {
+                topDown(anim, mover, t);
+            }
             return this;
         }
 

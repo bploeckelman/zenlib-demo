@@ -5,12 +5,14 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.zendogames.zenlib.Time;
 import com.zendogames.zenlib.ZenFlag;
 import com.zendogames.zenlib.ZenGame;
 import com.zendogames.zenlib.assets.ZenAtlas;
 import com.zendogames.zenlib.collision.CollisionDraw;
 import com.zendogames.zenlib.collision.CollisionWorld;
+import com.zendogames.zenlib.collision.SensorDraw;
 import com.zendogames.zenlib.ecs.World;
 import com.zendogames.zenlib.ecs.systems.AnimationSystem;
 import com.zendogames.zenlib.ecs.systems.RenderSystem;
@@ -34,11 +36,20 @@ public abstract class DemoScreen extends ZenScreen {
     static final int UNIT = Factory.UNIT;
     static final int WALL = 8;
 
+    /** Camera zoom steps for seeing more of a level; 1 is the screen's own view size. */
+    static final float[] ZOOMS = { 1f, 1.5f, 2f, 3f, 4f, 6f };
+
+    /** Overlays under {@code 2} are translucent so stacked outlines and whiskers do not hide the sprites. */
+    static final float OVERLAY_ALPHA = 0.5f;
+    static final Color COLLIDER_COLOR = new Color(1f, 0f, 1f, OVERLAY_ALPHA);
+
     final World world;
     final Factory factory;
     final CollisionWorld collision; // null when withCollision is false
     final TextureRegion pixel;
     final DebugActions actions;
+
+    int zoomIndex = 0;
 
     protected DemoScreen(ZenGame game, boolean withCollision) {
         super(game);
@@ -50,12 +61,24 @@ public abstract class DemoScreen extends ZenScreen {
         this.debugViews.add(actions);                // 'Screen' section first, after the switcher Main pins
         this.debugViews.add(DebugViews.ecs(world));
         ZenAtlas.SPRITES.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        SensorDraw.TERRAIN.a = OVERLAY_ALPHA;
+        SensorDraw.ONE_WAY.a = OVERLAY_ALPHA;
+        SensorDraw.THREAT.a  = OVERLAY_ALPHA;
+        actions.add("zoom out", Input.Keys.MINUS,  () -> zoom(+1))
+               .add("zoom in",  Input.Keys.EQUALS, () -> zoom(-1));
     }
 
     /** The world's systems after the game-specific ones every subclass adds; call at the end of the constructor. */
     protected void addCommonSystems() {
         world.addSystem(new AnimationSystem());
         world.addSystem(new RenderSystem(batch));
+    }
+
+    /** Steps {@link #zoomIndex} through {@link #ZOOMS} and applies it to the world camera. */
+    protected void zoom(int steps) {
+        zoomIndex = MathUtils.clamp(zoomIndex + steps, 0, ZOOMS.length - 1);
+        worldCamera.zoom = ZOOMS[zoomIndex];
+        worldCamera.update();
     }
 
     @Override
@@ -66,6 +89,10 @@ public abstract class DemoScreen extends ZenScreen {
             }
             @Override protected boolean onKeyDown(int keycode) {
                 return actions.key(keycode);
+            }
+            @Override protected boolean onScrolled(float amountX, float amountY) {
+                zoom(amountY > 0 ? +1 : -1); // wheel down zooms out
+                return true;
             }
             @Override protected boolean debugKey(int keycode) {
                 if (keycode == Input.Keys.NUM_9) {
@@ -91,7 +118,8 @@ public abstract class DemoScreen extends ZenScreen {
         batch.begin();
         world.render(Time.delta);
         if (collision != null && ZenFlag.DEBUG_RENDER.on()) {
-            CollisionDraw.all(shapes, collision, Color.MAGENTA, 1f, world.alpha());
+            CollisionDraw.all(shapes, collision, COLLIDER_COLOR, 1f, world.alpha());
+            SensorDraw.all(shapes, world, 1f, world.alpha());
         }
         batch.end();
     }

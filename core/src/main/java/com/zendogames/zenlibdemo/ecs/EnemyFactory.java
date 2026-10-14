@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.zendogames.zenlib.Log;
 import com.zendogames.zenlib.assets.ZenAnimHero;
+import com.zendogames.zenlib.collision.CollisionMask;
 import com.zendogames.zenlib.ecs.*;
 import com.zendogames.zenlib.ecs.components.*;
 import com.zendogames.zenlib.ecs.movement.Motion;
@@ -222,6 +223,24 @@ public class EnemyFactory {
         });
 
         return entity;
+    }
+
+    public Entity watcher(int x, int y) {
+        var tuning = PlatformerTuning.player(Factory.UNIT)
+                .withAbilities(PlatformerTuning.Abilities.NONE);
+        var animator = new Animator(ZenAnimHero.IDLE, 8, 0);
+        animator.tint.set(Color.LIME);
+
+        return world.createEntity()
+                .tag(Tags.ENEMY)
+                .add(new Name("watcher"))
+                .add(new Position(x, y))
+                .add(new Input())
+                .add(new Mover(new PlatformerMotion(tuning)))
+                .add(new Behavior(HeroState.NORMAL))
+                .add(Collider.rect(GameMask.ENEMY, -4, 0, 8, 16).blockedBy(GameMask.SOLID))
+                .add(Sensor.fan(12, 360, 0, 10 * Factory.UNIT, CollisionMask.of(GameMask.SOLID), CollisionMask.of(GameMask.PLAYER)))
+                .add(animator);
     }
 
     /**

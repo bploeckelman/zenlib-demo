@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.zendogames.zenlib.Log;
 import com.zendogames.zenlib.ZenGame;
+import com.zendogames.zenlib.collision.CollisionMask;
 import com.zendogames.zenlib.ecs.Entity;
 import com.zendogames.zenlib.ecs.components.*;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerTuning;
@@ -27,6 +28,7 @@ import com.zendogames.zenlibdemo.ecs.DemoContacts;
 import com.zendogames.zenlibdemo.ecs.EnemyFactory;
 import com.zendogames.zenlibdemo.ecs.GameMask;
 import com.zendogames.zenlibdemo.ecs.components.Trigger;
+import com.zendogames.zenlibdemo.ecs.systems.FleeSystem;
 
 /**
  * The library's Tiled support on the reference project's warp room ({@code assets/maps/warp-room.tmx},
@@ -42,11 +44,15 @@ import com.zendogames.zenlibdemo.ecs.components.Trigger;
  *   trigger       a zone with an 'effect': log (the two loggers), bounce ('height' tiles, the bouncer),
  *                 teleport (to the 'target' marker after 'dwell' seconds, the two teleporters)
  *   marker        a named Position-only entity, what teleports point at
+ *   watcher       (not in the map, spawned by hand) an enemy that runs from the heroes its {@code Sensor}
+ *                 sees and hops crates in its way; {@code FleeSystem} steers it
  * </pre>
  * Buttons in the Debug window, keys in parentheses there: crate at the pointer (also the unarmed click),
- * toggle the collision layer's tiles over the world (compare with {@code 2}'s grid outlines), reload the map
- * from disk after saving in Tiled, rebuild from the loaded map. The Tilemaps view lists every layer with its
- * own visibility toggle.
+ * a watcher or the ramps grid at the pointer, a sensor on player 2 (named rays on a body you steer, press
+ * again to remove), toggle the collision layer's tiles over the world (compare with {@code 2}'s grid
+ * outlines), reload the map from disk after saving in Tiled, rebuild from the loaded map. {@code 2} also
+ * draws every sensor's whiskers; the Sensors view lists their readings, the Tilemaps view every layer
+ * with its own visibility toggle.
  */
 public class TilemapScreen extends DemoScreen {
 
@@ -58,6 +64,23 @@ public class TilemapScreen extends DemoScreen {
     static final InputControls HERO_1 = InputControls.wasd(Input.Keys.SPACE);
     static final InputControls HERO_2 = InputControls.arrows(Input.Keys.ENTER);
 
+    /**
+     * Half the library preset's speed with the preset's jump: a full jump covers 4 tiles instead of 7.5, a
+     * standing jump with a 0.1 s nudge lands one tile over instead of 2.4, and crossing the 320 px view takes
+     * 3.3 s instead of 1.7. The dash and wall-jump kicks are halved to match.
+     */
+    static final PlatformerTuning HERO_TUNING = new PlatformerTuning(
+            UNIT,
+            6, 0.1f, 0.08f,         // ground: speed (tiles/s), accel time, stop time
+            6, 0.2f, 0.2f, 22,      // air: speed, accel time, stop time, max fall speed
+            5, 0.38f,               // jump: apex height (tiles), time to peak
+            2.5f, 2f,               // gravity multipliers: jump cut, fall
+            0.1f, 0.12f,            // jump helpers: buffer time, coyote time
+            new PlatformerTuning.Abilities(
+                    6, 10, 0.2f,                                         // wall: slide speed, jump speed x, steer-lock time
+                    PlatformerTuning.Abilities.LedgeGrab.PUSH, 0.25f, 0.1f, // ledge: grab rule, reach, regrab time
+                    20, 0.2f, 0.4f));                                    // dash: speed, time, cooldown
+
     final EnemyFactory enemies;
     final ContactSystem contactSystem;
     final CameraFollow cameraFollow;
@@ -66,6 +89,7 @@ public class TilemapScreen extends DemoScreen {
 
     Tilemap tilemap;
     Entity hero;
+    Entity hero2;
 
     public TilemapScreen(ZenGame game) {
         super(game, /*withCollision*/ true);
@@ -73,6 +97,8 @@ public class TilemapScreen extends DemoScreen {
         this.contactSystem = new ContactSystem(collision, new DemoContacts());
 
         world.addSystem(new InputSystem(inputProcessor));
+        world.addSystem(new SensorSystem(collision));
+        world.addSystem(new FleeSystem());
         world.addSystem(new TimerSystem());
         world.addSystem(new BehaviorSystem());
         world.addSystem(new LifetimeSystem());
@@ -97,9 +123,13 @@ public class TilemapScreen extends DemoScreen {
         debugViews.add(DebugViews.movers(world));
         debugViews.add(DebugViews.contacts(contactSystem));
         debugViews.add(DebugViews.behaviors(world));
+        debugViews.add(DebugViews.sensors(world));
         debugViews.add(DebugViews.timers(world));
         actions.defaultClick(this::crate)
                 .arm("crate",                  Input.Keys.C, this::crate)
+                .arm("watcher",                Input.Keys.T, enemies::watcher)
+                .arm("ramps",                  Input.Keys.P, factory::ramps)
+                .add("sensor on player 2",     Input.Keys.H, this::sensorOnPlayer2)
                 .add("toggle collision layer", Input.Keys.L, this::toggleCollisionLayer)
                 .add("reload map from disk",   Input.Keys.M, this::reloadMap)
                 .add("rebuild level",          Input.Keys.R, () -> { world.clear(); buildLevel(); });
@@ -108,6 +138,7 @@ public class TilemapScreen extends DemoScreen {
     /** The map entity and its layers, then the objects; a new {@code Tilemap} each time since one instance is one map entity. */
     private void buildLevel() {
         hero = null;
+        hero2 = null;
         tilemap = new Tilemap(GameMap.DEMO.get());
         tilemap.spawn(world, GameMask.SOLID, batch, worldCamera);
         spawner.spawnAll(tilemap);
@@ -143,8 +174,8 @@ public class TilemapScreen extends DemoScreen {
     private void player(Tilemap map, MapObject object) {
         var number = TiledProps.get(object, "number", "1", String.class);
         var entity = switch (number) {
-            case "1" -> hero = factory.platformerHero(TiledProps.x(object), TiledProps.y(object), HERO_1, PlatformerTuning.player(UNIT));
-            case "2" -> factory.platformerHero(TiledProps.x(object), TiledProps.y(object), HERO_2, PlatformerTuning.player(UNIT));
+            case "1" -> hero  = factory.platformerHero(TiledProps.x(object), TiledProps.y(object), HERO_1, HERO_TUNING);
+            case "2" -> hero2 = factory.platformerHero(TiledProps.x(object), TiledProps.y(object), HERO_2, HERO_TUNING);
             default  -> throw new GdxRuntimeException("player %s has number '%s', expected 1 or 2".formatted(TiledProps.describe(object), number));
         };
         Name.get(entity).name = object.getName();
@@ -190,6 +221,18 @@ public class TilemapScreen extends DemoScreen {
 
     private void crate(int x, int y) {
         factory.crate(pixel, x, y);
+    }
+
+    private void sensorOnPlayer2() {
+        if (hero2 == null || !hero2.isAlive()) {
+            Log.warn(TAG, "no player 2 to sense with");
+            return;
+        }
+        if (Sensor.has(hero2)) {
+            hero2.remove(Sensor.TYPE);
+            return;
+        }
+        hero2.add(Sensor.rays(6 * UNIT, CollisionMask.of(GameMask.SOLID), CollisionMask.of(GameMask.PLAYER, GameMask.ENEMY), 0, -45, -90, 180));
     }
 
     private void toggleCollisionLayer() {
