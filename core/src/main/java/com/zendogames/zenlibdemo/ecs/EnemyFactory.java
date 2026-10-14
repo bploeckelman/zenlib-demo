@@ -12,6 +12,7 @@ import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMode;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMotion;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerTuning;
 import com.zendogames.zenlib.render.RenderLayer;
+import com.zendogames.zenlibdemo.ecs.components.Flee;
 
 import java.util.function.IntSupplier;
 
@@ -225,11 +226,16 @@ public class EnemyFactory {
         return entity;
     }
 
+    /** Runs from the heroes its sight rays see (up to 4 at once), the 12 whiskers read the terrain for its hops; {@code FleeSystem} steers. */
     public Entity watcher(int x, int y) {
         var tuning = PlatformerTuning.player(Factory.UNIT)
                 .withAbilities(PlatformerTuning.Abilities.NONE);
         var animator = new Animator(ZenAnimHero.IDLE, 8, 0);
         animator.tint.set(Color.LIME);
+        var sensor = Sensor.fan(12, 360, 0, 10 * Factory.UNIT,
+                        CollisionMask.of(GameMask.SOLID),
+                        CollisionMask.of(GameMask.PLAYER))
+                .sightRays(4);
 
         return world.createEntity()
                 .tag(Tags.ENEMY)
@@ -238,8 +244,9 @@ public class EnemyFactory {
                 .add(new Input())
                 .add(new Mover(new PlatformerMotion(tuning)))
                 .add(new Behavior(HeroState.NORMAL))
+                .add(new Flee())
                 .add(Collider.rect(GameMask.ENEMY, -4, 0, 8, 16).blockedBy(GameMask.SOLID))
-                .add(Sensor.fan(12, 360, 0, 10 * Factory.UNIT, CollisionMask.of(GameMask.SOLID), CollisionMask.of(GameMask.PLAYER)))
+                .add(sensor)
                 .add(animator);
     }
 
