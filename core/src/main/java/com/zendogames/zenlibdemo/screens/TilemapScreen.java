@@ -96,7 +96,7 @@ public class TilemapScreen extends DemoScreen {
         this.enemies = new EnemyFactory(world);
         this.contactSystem = new ContactSystem(collision, new DemoContacts());
 
-        world.addSystem(new InputSystem(inputProcessor));
+        world.addSystem(new InputSystem(game.input));
         world.addSystem(new SensorSystem(collision));
         world.addSystem(new FleeSystem());
         world.addSystem(new TimerSystem());

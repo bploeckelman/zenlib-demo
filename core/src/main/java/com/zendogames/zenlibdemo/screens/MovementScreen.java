@@ -52,7 +52,7 @@ public class MovementScreen extends DemoScreen {
     static final int MAP_HEIGHT  = 360;
     static final int FLOOR       = WALL;   // top of the bottom wall
 
-    static final InputControls HERO_1 = InputControls.wasd(Input.Keys.SPACE);
+    static final InputControls HERO_1 = InputControls.wasd(Input.Keys.SPACE).gamepad(0);
     static final InputControls HERO_2 = InputControls.arrows(Input.Keys.ENTER);
 
     final EnemyFactory enemies;
@@ -66,7 +66,7 @@ public class MovementScreen extends DemoScreen {
         this.enemies = new EnemyFactory(world);
         this.contactSystem = new ContactSystem(collision, new DemoContacts());
 
-        world.addSystem(new InputSystem(inputProcessor));
+        world.addSystem(new InputSystem(game.input));
         world.addSystem(new TimerSystem());
         world.addSystem(new BehaviorSystem());
         world.addSystem(new MovementSystem(collision));

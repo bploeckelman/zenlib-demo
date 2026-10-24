@@ -3,7 +3,7 @@ package com.zendogames.zenlibdemo.screens;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.zendogames.zenlib.Time;
@@ -114,7 +114,7 @@ public abstract class DemoScreen extends ZenScreen {
     protected void afterWorldUpdate(float dt) {}
 
     @Override
-    public void renderWorld(SpriteBatch batch) {
+    public void renderWorld(Batch batch) {
         batch.begin();
         world.render(Time.delta);
         if (collision != null && ZenFlag.DEBUG_RENDER.on()) {
