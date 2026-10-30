@@ -7,7 +7,9 @@ import com.zendogames.zenlib.imgui.ImGuiGdx;
 import com.zendogames.zenlib.screens.ZenScreen;
 import com.zendogames.zenlib.ui.ScreenSwitcher;
 import com.zendogames.zenlibdemo.assets.GameMap;
+import com.zendogames.zenlibdemo.assets.GameMusic;
 import com.zendogames.zenlibdemo.assets.GameSkin;
+import com.zendogames.zenlibdemo.assets.GameSound;
 import com.zendogames.zenlibdemo.screens.*;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
@@ -26,6 +28,8 @@ public class Main extends ZenGame {
         ZenFlag.DEBUG_FRAME_POOL.enable();
         assets.register(GameMap.values());
         assets.register(GameSkin.values());
+        assets.register(GameSound.values());
+        assets.register(GameMusic.values());
         debugUI.always(new ScreenSwitcher(this)
                 .add("Sprites",   SpriteScreen.class,    SpriteScreen::new)
                 .add("Collision", CollisionScreen.class, CollisionScreen::new)
@@ -33,6 +37,7 @@ public class Main extends ZenGame {
                 .add("Enemy",     EnemyScreen.class,     EnemyScreen::new)
                 .add("Tilemap",   TilemapScreen.class,   TilemapScreen::new)
                 .add("Menu",      MenuScreen.class,      MenuScreen::new)
+                .add("Audio",     AudioScreen.class,     AudioScreen::new)
         );
     }
 
