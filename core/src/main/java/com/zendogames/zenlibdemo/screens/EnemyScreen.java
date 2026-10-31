@@ -12,7 +12,7 @@ import com.zendogames.zenlib.ecs.systems.MovementSystem;
 import com.zendogames.zenlib.ecs.systems.TimerSystem;
 import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.ui.DebugViews;
-import com.zendogames.zenlibdemo.ecs.EnemyFactory;
+import com.zendogames.zenlibdemo.ecs.factories.EnemyFactory;
 import com.zendogames.zenlibdemo.ecs.Level;
 
 /**

@@ -19,8 +19,8 @@ import com.zendogames.zenlib.ecs.systems.MovementSystem;
 import com.zendogames.zenlib.render.CameraFollow;
 import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.ui.DebugViews;
-import com.zendogames.zenlibdemo.ecs.DemoContacts;
-import com.zendogames.zenlibdemo.ecs.Factory;
+import com.zendogames.zenlibdemo.ecs.GameContacts;
+import com.zendogames.zenlibdemo.ecs.factories.Factory;
 import com.zendogames.zenlibdemo.ecs.Level;
 import com.zendogames.zenlibdemo.ecs.systems.SpawnSystem;
 
@@ -59,7 +59,7 @@ public class CollisionScreen extends DemoScreen {
 
     public CollisionScreen(ZenGame game) {
         super(game, /*withCollision*/ true);
-        this.contactSystem = new ContactSystem(collision, new DemoContacts());
+        this.contactSystem = new ContactSystem(collision, new GameContacts());
         this.autoFill = new SpawnSystem(TARGET_HEROES, MAP_WIDTH, MAP_HEIGHT, this::temporaryHero);
 
         world.addSystem(autoFill);

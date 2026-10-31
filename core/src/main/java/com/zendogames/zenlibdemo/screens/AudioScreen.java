@@ -44,8 +44,8 @@ public class AudioScreen extends DemoScreen {
         addCommonSystems();
         worldCamera.position.set(VIEW_WIDTH / 2f, VIEW_HEIGHT / 2f, 0f);
         debugViews.add(DebugViews.audio(assets));
-        actions .defaultClick((x, y) -> GameSound.JUMPS.playAt(x))
-                .add("jump",        Input.Keys.J, GameSound.JUMPS::play)
+        actions .defaultClick((x, y) -> GameSound.EXPLOSIONS.playAt(x))
+                .add("jump",        Input.Keys.J, GameSound.EXPLOSIONS::play)
                 .add("jumps x3",    Input.Keys.F, this::jumps)
 //                .add("pop burst",   Input.Keys.B, this::burst)
 //                .add("hum loop",    Input.Keys.L, this::toggleHum)
@@ -55,7 +55,7 @@ public class AudioScreen extends DemoScreen {
                 .add("music stop",  Input.Keys.X, Audio::stopMusic)
 //                .add("duck",        Input.Keys.U, this::toggleDuck)
                 .add("pause",       Input.Keys.P, () -> { if (Audio.isPaused()) Audio.resume(); else Audio.pause(); })
-                .add("click (UI)",  Input.Keys.C, GameSound.CLICKS::play)
+                .add("click (UI)",  Input.Keys.C, GameSound.COIN::play)
                 .add("LOG_AUDIO",   Input.Keys.G, ZenFlag.LOG_AUDIO::toggle);
     }
 
@@ -64,9 +64,9 @@ public class AudioScreen extends DemoScreen {
         var refusedBefore = Audio.refusals(Audio.Refusal.COOLDOWN);
         var played = 0;
         for (int i = 0; i < 3; i++) {
-            if (GameSound.JUMPS.play(0.8f) != -1) played++;
+            if (GameSound.EXPLOSIONS.play(0.8f) != -1) played++;
         }
-        Log.info(TAG, "jumps: %d played (%s), %d refused", played, GameSound.JUMPS.last(), Audio.refusals(Audio.Refusal.COOLDOWN) - refusedBefore);
+        Log.info(TAG, "jumps: %d played (%s), %d refused", played, GameSound.EXPLOSIONS.last(), Audio.refusals(Audio.Refusal.COOLDOWN) - refusedBefore);
     }
 
     /** Ten starts in one frame: the cap lets {@code maxVoices} through and refuses the rest. */

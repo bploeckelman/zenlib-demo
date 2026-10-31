@@ -6,8 +6,9 @@ import com.zendogames.zenlib.collision.CollisionMask;
 public enum GameMask implements CollisionMask {
       SOLID
     , PLAYER
-    , TRIGGER
     , ENEMY
+    , TRIGGER
+    , HAZARD
     ;
 
       @Override

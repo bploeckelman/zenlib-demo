@@ -31,13 +31,14 @@ public class Main extends ZenGame {
         assets.register(GameSound.values());
         assets.register(GameMusic.values());
         debugUI.always(new ScreenSwitcher(this)
-                .add("Sprites",   SpriteScreen.class,    SpriteScreen::new)
-                .add("Collision", CollisionScreen.class, CollisionScreen::new)
-                .add("Movement",  MovementScreen.class,  MovementScreen::new)
-                .add("Enemy",     EnemyScreen.class,     EnemyScreen::new)
-                .add("Tilemap",   TilemapScreen.class,   TilemapScreen::new)
-                .add("Menu",      MenuScreen.class,      MenuScreen::new)
-                .add("Audio",     AudioScreen.class,     AudioScreen::new)
+                .add("Platformer", PlatformerScreen.class, PlatformerScreen::new)
+                .add("Sprites",    SpriteScreen.class,     SpriteScreen::new)
+                .add("Collision",  CollisionScreen.class,  CollisionScreen::new)
+                .add("Movement",   MovementScreen.class,   MovementScreen::new)
+                .add("Enemy",      EnemyScreen.class,      EnemyScreen::new)
+                .add("Tilemap",    TilemapScreen.class,    TilemapScreen::new)
+                .add("Menu",       MenuScreen.class,       MenuScreen::new)
+                .add("Audio",      AudioScreen.class,      AudioScreen::new)
         );
     }
 
@@ -47,7 +48,7 @@ public class Main extends ZenGame {
 
     @Override
     protected ZenScreen createFirstScreen() {
-        return new SpriteScreen(this);
+        return new PlatformerScreen(this);
     }
 
     @Override

@@ -14,29 +14,31 @@ import com.zendogames.zenlib.audio.ZenBus;
  */
 // @formatter:off
 public enum GameSound implements SoundType {
-      JUMP_1 ("sounds/jump1.ogg")
-    , JUMP_2 ("sounds/jump2.ogg")
-    , JUMP_3 ("sounds/jump3.ogg")
-    , JUMP_4 ("sounds/jump4.ogg")
-    , JUMP_5 ("sounds/jump5.ogg")
+      COIN        ("sounds/coin.ogg")
+    , EXPLOSION_1 ("sounds/explosion1.ogg")
+    , EXPLOSION_2 ("sounds/explosion2.ogg")
+    , EXPLOSION_3 ("sounds/explosion3.ogg")
+    , EXPLOSION_4 ("sounds/explosion4.ogg")
+    , EXPLOSION_5 ("sounds/explosion5.ogg")
+    , HIT_1       ("sounds/hit1.ogg")
+    , HIT_2       ("sounds/hit2.ogg")
+    , HIT_3       ("sounds/hit3.ogg")
+    , HIT_4       ("sounds/hit4.ogg")
+    , HIT_5       ("sounds/hit5.ogg")
+    , JUMP        ("sounds/jump.ogg")
+    , SLIME       ("sounds/slime.ogg")
+    , PLUCK_1     ("sounds/pluck1.ogg") { @Override public AudioBus bus() { return ZenBus.UI; } }
+    , PLUCK_2     ("sounds/pluck2.ogg") { @Override public AudioBus bus() { return ZenBus.UI; } }
+    , TONE_THREE  ("sounds/tone-three.ogg") { @Override public AudioBus bus() { return ZenBus.UI; } }
+    , TONE_TWO    ("sounds/tone-two.ogg") { @Override public AudioBus bus() { return ZenBus.UI; } }
 //    , LAND  ("audio/sounds/land.ogg")  { @Override public float pitchVariance() { return 0.1f; } }
 //    , POP   ("audio/sounds/pop.ogg")   { @Override public int maxVoices() { return 4; } @Override public float duration() { return 0.3f; } }
 //    , HUM   ("audio/sounds/hum.ogg")   // a loop
-    , CLICK_1        ("sounds/click_001.ogg")        { @Override public AudioBus bus() { return ZenBus.UI; } }
-    , CLICK_2        ("sounds/click_002.ogg")        { @Override public AudioBus bus() { return ZenBus.UI; } }
-    , CLICK_3        ("sounds/click_003.ogg")        { @Override public AudioBus bus() { return ZenBus.UI; } }
-    , CLOSE_1        ("sounds/close_001.ogg")        { @Override public AudioBus bus() { return ZenBus.UI; } }
-    , CLOSE_2        ("sounds/close_002.ogg")        { @Override public AudioBus bus() { return ZenBus.UI; } }
-    , CLOSE_3        ("sounds/close_003.ogg")        { @Override public AudioBus bus() { return ZenBus.UI; } }
-    , CONFIRMATION_1 ("sounds/confirmation_001.ogg") { @Override public AudioBus bus() { return ZenBus.UI; } }
-    , CONFIRMATION_2 ("sounds/confirmation_002.ogg") { @Override public AudioBus bus() { return ZenBus.UI; } }
-    , CONFIRMATION_3 ("sounds/confirmation_003.ogg") { @Override public AudioBus bus() { return ZenBus.UI; } }
     ;
 
-    public static final SoundGroup JUMPS         = SoundGroup.of(JUMP_1, JUMP_2, JUMP_3, JUMP_4, JUMP_5).noRepeat().cooldown(0.1f);
-    public static final SoundGroup CLICKS        = SoundGroup.of(CLICK_1, CLICK_2, CLICK_3).noRepeat().cooldown(0.1f);
-    public static final SoundGroup CLOSES        = SoundGroup.of(CLOSE_1, CLOSE_2, CLOSE_3).noRepeat().cooldown(0.1f);
-    public static final SoundGroup CONFIRMATIONS = SoundGroup.of(CONFIRMATION_1, CONFIRMATION_2, CONFIRMATION_3).noRepeat().cooldown(0.1f);
+    public static final SoundGroup EXPLOSIONS = SoundGroup.of(EXPLOSION_1, EXPLOSION_2, EXPLOSION_3, EXPLOSION_4, EXPLOSION_5).noRepeat().cooldown(0.1f);
+    public static final SoundGroup HITS = SoundGroup.of(HIT_1, HIT_2, HIT_3, HIT_4, HIT_5).noRepeat().cooldown(0.1f);
+    public static final SoundGroup PLUCKS = SoundGroup.of(PLUCK_1, PLUCK_2).noRepeat().cooldown(0.1f);
 
     private final Asset<Sound> asset = new Asset<>(this);
     private final String file;

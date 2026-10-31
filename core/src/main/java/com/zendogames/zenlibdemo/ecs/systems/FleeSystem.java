@@ -9,7 +9,7 @@ import com.zendogames.zenlib.ecs.components.Input;
 import com.zendogames.zenlib.ecs.components.Mover;
 import com.zendogames.zenlib.ecs.components.Sensor;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMotion;
-import com.zendogames.zenlibdemo.ecs.Factory;
+import com.zendogames.zenlibdemo.ecs.factories.Factory;
 import com.zendogames.zenlibdemo.ecs.components.Flee;
 
 /**

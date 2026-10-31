@@ -2,6 +2,7 @@ package com.zendogames.zenlibdemo.screens;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.github.tommyettinger.gand.utils.Direction;
 import com.zendogames.zenlib.Log;
 import com.zendogames.zenlib.Time;
 import com.zendogames.zenlib.ZenFlag;
@@ -17,9 +18,9 @@ import com.zendogames.zenlib.ecs.systems.*;
 import com.zendogames.zenlib.input.InputControls;
 import com.zendogames.zenlib.render.WorldView;
 import com.zendogames.zenlib.ui.DebugViews;
-import com.zendogames.zenlibdemo.ecs.DemoContacts;
-import com.zendogames.zenlibdemo.ecs.EnemyFactory;
-import com.zendogames.zenlibdemo.ecs.HeroState;
+import com.zendogames.zenlibdemo.ecs.GameContacts;
+import com.zendogames.zenlibdemo.ecs.factories.EnemyFactory;
+import com.zendogames.zenlibdemo.ecs.state.HeroState;
 import com.zendogames.zenlibdemo.ecs.Level;
 
 /**
@@ -64,7 +65,7 @@ public class MovementScreen extends DemoScreen {
     public MovementScreen(ZenGame game) {
         super(game, /*withCollision*/ true);
         this.enemies = new EnemyFactory(world);
-        this.contactSystem = new ContactSystem(collision, new DemoContacts());
+        this.contactSystem = new ContactSystem(collision, new GameContacts());
 
         world.addSystem(new InputSystem(game.input));
         world.addSystem(new TimerSystem());
@@ -110,7 +111,7 @@ public class MovementScreen extends DemoScreen {
         factory.wall(pixel, "pen:bottom", 480, 200, MAP_WIDTH - 480, WALL);
         factory.wall(pixel, "pen:left",   480, 200, WALL, MAP_HEIGHT - 200);
         factory.wall(pixel, "pen:block",  540, 260, UNIT, UNIT);
-        factory.walker(552, 300, HERO_2);
+        factory.walker(pixel, 552, 300, Direction.DOWN);
 
         hero = factory.platformerHero(92, FLOOR, HERO_1, PlatformerTuning.player(UNIT));
         highJump = false;

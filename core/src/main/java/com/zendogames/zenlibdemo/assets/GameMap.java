@@ -8,7 +8,9 @@ import com.zendogames.zenlib.assets.MapType;
 
 /** The demo's Tiled maps, loaded with everything else at startup; registered in {@code Main.init()}. */
 public enum GameMap implements MapType {
-    DEMO("maps/warp-room.tmx");
+      PLATFORMER ("maps/00-example-platformer.tmx")
+    , TOP_DOWN   ("maps/00-example-top-down.tmx")
+    ;
 
     /** Class property defaults come from here; every demo map shares the one project. */
     private static final String PROJECT = "maps/zenlib-demo.tiled-project";

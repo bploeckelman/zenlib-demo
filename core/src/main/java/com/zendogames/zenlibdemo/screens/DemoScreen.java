@@ -20,7 +20,7 @@ import com.zendogames.zenlib.input.ScreenInputProcessor;
 import com.zendogames.zenlib.screens.ZenScreen;
 import com.zendogames.zenlib.ui.DebugActions;
 import com.zendogames.zenlib.ui.DebugViews;
-import com.zendogames.zenlibdemo.ecs.Factory;
+import com.zendogames.zenlibdemo.ecs.factories.Factory;
 
 /**
  * What every demo screen with a World needs, once: the world and factory, an optional
@@ -55,7 +55,7 @@ public abstract class DemoScreen extends ZenScreen {
         super(game);
         this.pixel = new TextureRegion(game.pixel);
         this.world = new World();
-        this.factory = new Factory(world);
+        this.factory = new Factory(world, pixel);
         this.collision = withCollision ? new CollisionWorld(world) : null;
         this.actions = new DebugActions();
         this.debugViews.add(actions);                // 'Screen' section first, after the switcher Main pins

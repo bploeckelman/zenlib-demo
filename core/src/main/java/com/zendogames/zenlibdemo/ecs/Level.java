@@ -1,6 +1,7 @@
 package com.zendogames.zenlibdemo.ecs;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.zendogames.zenlibdemo.ecs.factories.Factory;
 
 /** The level pieces the screens share, so the walled map is built in one place. */
 public final class Level {

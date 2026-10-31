@@ -24,8 +24,8 @@ import com.zendogames.zenlib.tilemap.MapObjectSpawner;
 import com.zendogames.zenlib.tilemap.TiledProps;
 import com.zendogames.zenlib.ui.DebugViews;
 import com.zendogames.zenlibdemo.assets.GameMap;
-import com.zendogames.zenlibdemo.ecs.DemoContacts;
-import com.zendogames.zenlibdemo.ecs.EnemyFactory;
+import com.zendogames.zenlibdemo.ecs.GameContacts;
+import com.zendogames.zenlibdemo.ecs.factories.EnemyFactory;
 import com.zendogames.zenlibdemo.ecs.GameMask;
 import com.zendogames.zenlibdemo.ecs.components.Trigger;
 import com.zendogames.zenlibdemo.ecs.systems.FleeSystem;
@@ -94,7 +94,7 @@ public class TilemapScreen extends DemoScreen {
     public TilemapScreen(ZenGame game) {
         super(game, /*withCollision*/ true);
         this.enemies = new EnemyFactory(world);
-        this.contactSystem = new ContactSystem(collision, new DemoContacts());
+        this.contactSystem = new ContactSystem(collision, new GameContacts());
 
         world.addSystem(new InputSystem(game.input));
         world.addSystem(new SensorSystem(collision));
@@ -139,7 +139,7 @@ public class TilemapScreen extends DemoScreen {
     private void buildLevel() {
         hero = null;
         hero2 = null;
-        tilemap = new Tilemap(GameMap.DEMO.get());
+        tilemap = new Tilemap(GameMap.TOP_DOWN.get());
         tilemap.spawn(world, GameMask.SOLID, batch, worldCamera);
         spawner.spawnAll(tilemap);
 
@@ -246,7 +246,7 @@ public class TilemapScreen extends DemoScreen {
 
     /** Save in Tiled, press M: the file is read again and the level rebuilt from it. */
     private void reloadMap() {
-        GameMap.DEMO.reload(assets);
+        GameMap.TOP_DOWN.reload(assets);
         world.clear();
         buildLevel();
     }

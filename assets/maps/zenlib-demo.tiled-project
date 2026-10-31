@@ -8,55 +8,64 @@
         "."
     ],
     "properties": [
-        {
-            "name": "launcher",
-            "propertytype": "launcher",
-            "type": "class",
-            "value": {
-            }
-        },
-        {
-            "name": "player",
-            "propertytype": "player",
-            "type": "class",
-            "value": {
-            }
-        }
     ],
     "propertyTypes": [
         {
-            "color": "#ff00aaff",
+            "color": "#ffffaaff",
+            "drawFill": true,
+            "id": 11,
+            "members": [
+                {
+                    "name": "height",
+                    "type": "float",
+                    "value": 2
+                },
+                {
+                    "name": "speed",
+                    "type": "float",
+                    "value": 3
+                }
+            ],
+            "name": "ball",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ffffaa00",
             "drawFill": true,
             "id": 2,
             "members": [
                 {
-                    "name": "period",
+                    "name": "bounce",
                     "type": "float",
-                    "value": 1
-                },
-                {
-                    "name": "xVel",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "yVel",
-                    "type": "int",
-                    "value": 0
+                    "value": 8
                 }
             ],
-            "name": "launcher",
+            "name": "bouncer",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "project"
+                "object"
             ]
         },
         {
-            "color": "#ffaaff00",
+            "id": 4,
+            "name": "direction",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "up",
+                "down",
+                "left",
+                "right"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "color": "#ffa0a0a4",
             "drawFill": true,
-            "id": 7,
+            "id": 16,
             "members": [
                 {
                     "name": "unused",
@@ -64,12 +73,205 @@
                     "value": ""
                 }
             ],
+            "name": "dummy",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ffff55ff",
+            "drawFill": true,
+            "id": 17,
+            "members": [
+                {
+                    "name": "boss",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "kind",
+                    "type": "string",
+                    "value": "thug"
+                },
+                {
+                    "name": "weapon",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "enemy",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ffffff00",
+            "drawFill": true,
+            "id": 7,
+            "members": [
+                {
+                    "name": "amplitude",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "direction",
+                    "propertyType": "direction",
+                    "type": "string",
+                    "value": "right"
+                },
+                {
+                    "name": "period",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "range",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "speed",
+                    "type": "float",
+                    "value": 4
+                }
+            ],
+            "name": "flyer",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ffaaff00",
+            "drawFill": true,
+            "id": 8,
+            "members": [
+                {
+                    "name": "direction",
+                    "propertyType": "direction",
+                    "type": "string",
+                    "value": "right"
+                },
+                {
+                    "name": "dist",
+                    "type": "float",
+                    "value": 2
+                },
+                {
+                    "name": "height",
+                    "type": "float",
+                    "value": 1.5
+                },
+                {
+                    "name": "period",
+                    "type": "float",
+                    "value": 2
+                }
+            ],
+            "name": "jumper",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ff00aaff",
+            "drawFill": true,
+            "id": 5,
+            "members": [
+                {
+                    "name": "direction",
+                    "propertyType": "direction",
+                    "type": "string",
+                    "value": "up"
+                }
+            ],
+            "name": "jumpthru",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ff55ff7f",
+            "drawFill": true,
+            "id": 9,
+            "members": [
+                {
+                    "name": "height",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "period",
+                    "type": "float",
+                    "value": 2
+                },
+                {
+                    "name": "target",
+                    "type": "object",
+                    "value": 0
+                }
+            ],
+            "name": "leaper",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ff0055ff",
+            "drawFill": true,
+            "id": 12,
+            "members": [
+                {
+                    "name": "unused",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
             "name": "marker",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "project"
+                "object"
+            ]
+        },
+        {
+            "color": "#ffff5500",
+            "drawFill": true,
+            "id": 14,
+            "members": [
+                {
+                    "name": "direction",
+                    "propertyType": "direction",
+                    "type": "string",
+                    "value": "right"
+                }
+            ],
+            "name": "patrol",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ffaaff00",
+            "drawFill": true,
+            "id": 18,
+            "members": [
+                {
+                    "name": "weapon",
+                    "type": "string",
+                    "value": "pipe"
+                }
+            ],
+            "name": "pickup",
+            "type": "class",
+            "useAs": [
+                "object"
             ]
         },
         {
@@ -78,57 +280,88 @@
             "id": 1,
             "members": [
                 {
-                    "name": "number",
-                    "propertyType": "player_vals",
+                    "name": "unused",
                     "type": "string",
-                    "value": "1"
+                    "value": ""
                 }
             ],
             "name": "player",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "project"
+                "object"
             ]
         },
         {
-            "id": 5,
-            "name": "player_vals",
-            "storageType": "string",
-            "type": "enum",
-            "values": [
-                "1",
-                "2"
+            "color": "#ffaa0000",
+            "drawFill": true,
+            "id": 10,
+            "members": [
+                {
+                    "name": "gravity",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "interval",
+                    "type": "float",
+                    "value": 2
+                },
+                {
+                    "name": "speed",
+                    "type": "float",
+                    "value": 6
+                }
             ],
-            "valuesAsFlags": false
+            "name": "shooter",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
         },
         {
-            "color": "#ffff5500",
+            "color": "#ffff0000",
             "drawFill": true,
             "id": 3,
             "members": [
                 {
-                    "name": "activation",
-                    "propertyType": "trigger_activation",
+                    "name": "direction",
+                    "propertyType": "direction",
                     "type": "string",
-                    "value": "touch"
+                    "value": "up"
                 },
+                {
+                    "name": "stage_num",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "spike",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ffff0571",
+            "drawFill": true,
+            "id": 21,
+            "members": [
+            ],
+            "name": "stage",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ffff55ff",
+            "drawFill": true,
+            "id": 13,
+            "members": [
                 {
                     "name": "dwell",
                     "type": "float",
-                    "value": 0
-                },
-                {
-                    "name": "effect",
-                    "propertyType": "trigger_vals",
-                    "type": "string",
-                    "value": "log"
-                },
-                {
-                    "name": "height",
-                    "type": "float",
-                    "value": 3
+                    "value": 2
                 },
                 {
                     "name": "target",
@@ -136,37 +369,62 @@
                     "value": 0
                 }
             ],
-            "name": "trigger",
+            "name": "teleporter",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "project"
+                "object"
             ]
         },
         {
-            "id": 4,
-            "name": "trigger_vals",
-            "storageType": "string",
-            "type": "enum",
-            "values": [
-                "log",
-                "bounce",
-                "teleport"
+            "color": "#ff00ffff",
+            "drawFill": true,
+            "id": 19,
+            "members": [
+                {
+                    "name": "unused",
+                    "type": "string",
+                    "value": ""
+                }
             ],
-            "valuesAsFlags": false
+            "name": "television",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
         },
         {
+            "color": "#ffff007f",
+            "drawFill": true,
             "id": 6,
-            "name": "trigger_activation",
-            "storageType": "string",
-            "type": "enum",
-            "values": [
-                "touch",
-                "center",
-                "inside"
+            "members": [
+                {
+                    "name": "unused",
+                    "type": "string",
+                    "value": ""
+                }
             ],
-            "valuesAsFlags": false
+            "name": "walker",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
+        },
+        {
+            "color": "#ffff0000",
+            "drawFill": true,
+            "id": 15,
+            "members": [
+                {
+                    "name": "unused",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
+            "name": "wall",
+            "type": "class",
+            "useAs": [
+                "object"
+            ]
         }
     ]
 }
