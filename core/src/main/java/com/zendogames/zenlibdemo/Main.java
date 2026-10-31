@@ -39,6 +39,7 @@ public class Main extends ZenGame {
                 .add("Tilemap",    TilemapScreen.class,    TilemapScreen::new)
                 .add("Menu",       MenuScreen.class,       MenuScreen::new)
                 .add("Audio",      AudioScreen.class,      AudioScreen::new)
+                .add("Combat",     CombatScreen.class,     CombatScreen::new)
         );
     }
 
