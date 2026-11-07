@@ -6,6 +6,7 @@ import com.zendogames.zenlib.ecs.components.Health;
 import com.zendogames.zenlib.ecs.components.Mover;
 import com.zendogames.zenlib.ecs.movement.platformer.PlatformerMotion;
 import com.zendogames.zenlibdemo.ecs.state.HeroState;
+import com.zendogames.zenlibdemo.events.CombatEvent;
 
 /**
  * The demo's rule book for strikes. A hero (an entity whose {@code Behavior} runs {@link HeroState})
@@ -13,12 +14,18 @@ import com.zendogames.zenlibdemo.ecs.state.HeroState;
  * the same path {@code DemoContacts.hurt} takes for touching an enemy. Anything else with
  * {@code Health} loses the attack's damage, is thrown away from the attacker by the attack's
  * knockback when it has a platformer mover, and despawns at zero. The flash is the target's own
- * {@code onStruck}, not a rule, so it lives where the target is spawned.
+ * {@code onStruck}, not a rule, so it lives where the target is spawned. Every strike is published as a
+ * {@link CombatEvent} after the rule has run, so the sounds and any shake live with whoever listens.
  */
 public class GameStrikes implements Strike.Responder {
 
     @Override
     public void strike(Strike strike) {
+        apply(strike);
+        CombatEvent.struck(strike);
+    }
+
+    private void apply(Strike strike) {
         var target = strike.target();
         var behavior = Behavior.has(target) ? Behavior.get(target) : null;
         if (behavior != null && behavior.current() instanceof HeroState) {
@@ -32,6 +39,7 @@ public class GameStrikes implements Strike.Responder {
         var left = Health.get(target).damage(strike.attack().damage());
         if (left == 0) {
             target.world().despawn(target);
+            CombatEvent.died(target, strike);
             return;
         }
         var mover = Mover.has(target) ? Mover.get(target) : null;

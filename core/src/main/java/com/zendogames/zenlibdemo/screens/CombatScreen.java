@@ -25,6 +25,8 @@ import com.zendogames.zenlib.ui.DebugViews;
 import com.zendogames.zenlibdemo.ecs.*;
 import com.zendogames.zenlibdemo.ecs.factories.EnemyFactory;
 import com.zendogames.zenlibdemo.ecs.state.HeroState;
+import com.zendogames.zenlibdemo.assets.GameSound;
+import com.zendogames.zenlibdemo.events.CombatEvent;
 
 /**
  * The combat slice: a hero on WASD + Space and a rival on the arrows + Enter, both the platformer
@@ -32,7 +34,9 @@ import com.zendogames.zenlibdemo.ecs.state.HeroState;
  * can only hit the other. Blobs (the unarmed click) are hurt-only punching bags with 3 health that
  * flash when struck. {@link GameStrikes} is the rule book; the hero's own {@code onStrike} is a
  * short hit-stop. {@code 2} draws the hitboxes over the collider outlines, {@code 9} with
- * {@code FRAME_STEP} walks a swing tick by tick.
+ * {@code FRAME_STEP} walks a swing tick by tick. The hit and death sounds come through
+ * {@link CombatEvent}: {@code GameStrikes} publishes, this screen's {@code subscriptions} listen, so the
+ * rule book knows nothing about audio and the Events view shows every strike.
  * <p>
  * The space is the library's {@code FLAT}: boxes overlap where they are drawn, so the one-way
  * platform is there to show that a slash under a fighter standing on it misses.
@@ -76,6 +80,8 @@ public class CombatScreen extends DemoScreen {
 
         debugViews.add(DebugViews.hitboxes(hitSystem));
         debugViews.add(DebugViews.behaviors(world));
+        debugViews.add(DebugViews.events());
+        subscriptions.on(CombatEvent.SIGNAL, this::onCombat);
         actions.defaultClick(this::blob)
                 .arm("blob",                Input.Keys.B, this::blob)
                 .add("attack",              Input.Keys.F, () -> request(hero, HeroState.ATTACK))
@@ -85,6 +91,7 @@ public class CombatScreen extends DemoScreen {
                 .add("immune hero",         Input.Keys.I, this::toggleImmune)
                 .add("revive both",         Input.Keys.V, this::revive)
                 .add("LOG_COMBAT",          Input.Keys.G, ZenFlag.LOG_COMBAT::toggle)
+                .add("LOG_EVENTS",          Input.Keys.E, ZenFlag.LOG_EVENTS::toggle)
                 .add("rebuild level",       Input.Keys.R, () -> { world.clear(); buildLevel(); });
     }
 
@@ -113,6 +120,14 @@ public class CombatScreen extends DemoScreen {
             Animator.get(e).tint.set(Color.RED);
             Timers.get(e).after("flash", 0.15f, t -> Animator.get(t.entity()).tint.set(Color.WHITE));
         };
+    }
+
+    /** The feedback side of a strike: a hit sound at the target, a death sound; the rules stayed in {@code GameStrikes}. */
+    private void onCombat(CombatEvent event) {
+        switch (event) {
+            case CombatEvent.Struck s -> GameSound.HITS.playAt(Position.get(s.strike().attacker()).x);
+            case CombatEvent.Died d   -> GameSound.EXPLOSIONS.play();
+        }
     }
 
     private int heroX() {
